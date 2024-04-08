@@ -1,6 +1,2 @@
 # You can define test configuration, and it will overwrite the default settings when running tests.
-debug: false
-benchmark: true
-max_depth: 4
-headers:
-  User-Agent: Test-UA
+debug: true
