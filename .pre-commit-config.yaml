@@ -1,0 +1,71 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.0.1
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+      - id: check-ast
+      - id: check-case-conflict
+      - id: check-executables-have-shebangs
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-symlinks
+  - repo: https://github.com/pre-commit/mirrors-isort
+    rev: v5.9.3
+    hooks:
+      - id: isort
+        args:
+          - --check-only
+          - --diff
+  - repo: https://github.com/PyCQA/pylint
+    rev: v2.17.1
+    hooks:
+      - id: pylint
+        name: pylint
+        entry: pylint
+        language: system
+        types: [ python ]
+  - repo: https://github.com/python-poetry/poetry
+    rev: "1.8"  # add version here
+    hooks:
+      - id: poetry-check # check pyproject.toml file
+      - id: poetry-lock # synchronize the lock file with pyproject.toml
+      - id: poetry-export # export requirements.txt
+      - id: poetry-install # install dependencies and the project
+  - repo: local
+    hooks:
+      - id: mypy
+        name: mypy
+        entry: mypy
+        language: system
+        types:
+          - python
+        exclude: "tests/.*"
+        args: [
+                    '--exclude=tests',
+          #          "--install-types"
+        ]
+      - id: black # auto-format
+        name: black
+        entry: black
+        language: system
+        types: [ python ]
+      #        files: ^(app/|tests/)
+      - id: isort # import sorting
+        name: isort
+        entry: isort
+        language: system
+        types: [ python ]
+        #        include: ^(app/|tests/)
+        #        exclude: '.*/migrations/.*'
+        args: [
+          '--line-length=110',
+          '--multi-line=3',
+          '--force-grid-wrap=0',
+          '--trailing-comma',
+          '--use-parentheses',
+          '--ensure-newline-before-comments',
+          "--profile black"
+        ]
