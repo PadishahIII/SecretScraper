@@ -12,13 +12,13 @@ repos:
       - id: check-json
       - id: check-merge-conflict
       - id: check-symlinks
-#  - repo: https://github.com/pre-commit/mirrors-isort
-#    rev: v5.9.3
-#    hooks:
-#      - id: isort
-#        args:
-#          - --check-only
-#          - --diff
+  - repo: https://github.com/pre-commit/mirrors-isort
+    rev: v5.9.3
+    hooks:
+      - id: isort
+        args:
+          - --check-only
+          - --diff
 #  - repo: https://github.com/PyCQA/pylint
 #    rev: v2.17.1
 #    hooks:
