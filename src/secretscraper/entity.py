@@ -16,11 +16,13 @@ class URLNode:
     url_object: typing.NamedTuple
 
 
-@dataclass
+@dataclass(eq=True, frozen=True)
 class Secret:
-    """Describes a unit of secret data"""
-    type: str = field(compare=True)
-    data: typing.Any = field(compare=True)
+    """Describes a unit of secret data
+    Hashable.
+    """
+    type: str = field(compare=True, hash=True)
+    data: typing.Any = field(compare=True, hash=True)
 
 
 def create_url(url_str: str, depth: int = -1, parent: URLNode = None) -> URLNode:

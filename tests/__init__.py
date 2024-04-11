@@ -1,5 +1,6 @@
 """Test"""
-
+import functools
+import time
 from pathlib import Path
 
 from secretscraper.config import settings
@@ -16,3 +17,17 @@ def merge_test_settings():
 
 
 merge_test_settings()
+
+
+def duration(func):
+    """Print execution time"""
+
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        before = time.time()
+        ret = func(*args, **kwargs)
+        after = time.time()
+        print(f"\n{func.__name__} finished in {after - before} seconds")
+        return ret
+
+    return wrapper
