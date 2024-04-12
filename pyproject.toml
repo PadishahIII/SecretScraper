@@ -19,6 +19,7 @@ pytest-benchmark = "^4.0.0"
 hyperscan = "^0.7.7"
 bs4 = "^0.0.2"
 aiohttp = "^3.9.4"
+pytest-cov = "^5.0.0"
 
 [tool.poetry.group.dev.dependencies]
 pylint = "^2.17.4"
