@@ -170,11 +170,13 @@ class TestCoroutineAsyncPoolCollector:
             100, 1000, asyncio.get_event_loop()
         ) as pool:
             future = await pool.submit(task)
+
             assert pool.is_finish is False
             assert pool.remaining_tasks == 1
             assert pool.running_tasks == 0
 
             await asyncio.sleep(0.6)
+            res = future.result()
             assert pool.is_finish is True
             assert pool.remaining_tasks == 0
             assert pool.running_tasks == 0

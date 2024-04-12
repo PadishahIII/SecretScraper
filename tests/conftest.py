@@ -11,10 +11,19 @@ def clicker():
     """clicker fixture"""
     yield CliRunner()
 
+
 @pytest.fixture
 @functools.cache
 def resource_text() -> str:
     with open(Path(__file__).parent / 'resources' / 'source_text.txt') as f:
+        s = f.read()
+    return s
+
+
+@pytest.fixture
+@functools.cache
+def html_text() -> str:
+    with open(Path(__file__).parent / 'resources' / 'HackerNews.html') as f:
         s = f.read()
     return s
 

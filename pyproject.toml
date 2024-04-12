@@ -18,6 +18,7 @@ pytest-asyncio = "^0.23.6"
 pytest-benchmark = "^4.0.0"
 hyperscan = "^0.7.7"
 bs4 = "^0.0.2"
+aiohttp = "^3.9.4"
 
 [tool.poetry.group.dev.dependencies]
 pylint = "^2.17.4"
@@ -42,8 +43,11 @@ log_cli = true
 log_cli_level = "INFO"
 log_cli_format = "%(asctime)s [%(levelname)8s] %(message)s (%(filename)s:%(lineno)s)"
 log_cli_date_format = "%Y-%m-%d %H:%M:%S"
-addopts = "--durations=10"
+addopts = "--durations=10 --cov-report html --cov=src"
 junit_duration_report = "total"
+filterwarnings = [
+    "ignore"
+]
 
 [tool.pylint.design]
 max-line-length = 120

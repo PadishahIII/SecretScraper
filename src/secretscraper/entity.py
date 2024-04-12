@@ -7,13 +7,19 @@ from urllib.parse import ParseResult, urlparse
 URL: typing.TypeAlias = ParseResult
 
 
-@dataclass
+@dataclass(unsafe_hash=True, eq=True)
 class URLNode:
-    """URL node used in site map."""
-    depth: int
-    parent: typing.Optional['URLNode']
-    url: str
-    url_object: typing.NamedTuple
+    """URL node used in site map.
+    Compare based on url_object.
+    """
+    url: str = field(hash=False, compare=False)
+    url_object: ParseResult = field(hash=True, compare=True)
+    depth: int = field(default=0, hash=False, compare=False)
+    parent: typing.Optional['URLNode'] = field(default=None, hash=False, compare=False)
+
+    def __post_init__(self):
+        if self.parent is not None and self.depth <= self.parent.depth:
+            raise ValueError(f"URLNode: depth({self.depth}) must be greater than that of parent({self.parent.depth})")
 
 
 @dataclass(eq=True, frozen=True)

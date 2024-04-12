@@ -130,7 +130,7 @@ class AsyncPoolCollector:
         event_loop: asyncio.AbstractEventLoop,
     ):
         """Factory function for creating AsyncPoolCollector
-
+        :param queue_capacity: maximum size of task queue, 0 for infinite queue
         :return: AsyncPoolCollector
         """
         pool = (

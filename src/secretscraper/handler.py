@@ -111,7 +111,7 @@ class HyperscanRegexHandler(Handler):
 class BSHandler(Handler):
     """BeautifulSoup handler that filter html elements on demand"""
 
-    def __init__(self, filter_func: typing.Callable[[BeautifulSoup], BSResult]) -> None:
+    def __init__(self, filter_func: typing.Callable[[BeautifulSoup], list[BSResult]]) -> None:
         self.filter = filter_func
 
     def handle(self, text: str) -> typing.Iterable[Secret]:
@@ -121,7 +121,7 @@ class BSHandler(Handler):
         :param text: should be in html format
         """
         soup = BeautifulSoup(text, "html.parser")
-        result: BSResult = self.filter(soup)
+        result: list[BSResult] = self.filter(soup)
         results: list[Secret] = list()
         if result is not None:
             secret = Secret(type="HTML Element", data=result)
