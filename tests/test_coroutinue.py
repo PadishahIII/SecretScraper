@@ -7,6 +7,7 @@ import time
 import typing
 import unittest
 
+import aiohttp
 import pytest
 
 from secretscraper.coroutinue import (AsyncPool, AsyncPoolCollector, AsyncTask,
@@ -18,6 +19,12 @@ logger = logging.getLogger(__name__)
 async def async_increment(i: int, sec: float) -> int:
     await asyncio.sleep(sec)
     return i + 1
+
+
+async def aiohttp_request(url: str, proxy: str = None) -> aiohttp.ClientResponse:
+    async with aiohttp.ClientSession() as session:
+        res = await session.get(url, proxy=proxy)
+        return res
 
 
 @pytest.fixture(scope="class")
@@ -45,6 +52,21 @@ class TestCoroutineAsyncWorker:
         end = time.perf_counter()
         logger.info(f"Task finish in {end - start} seconds")
         logger.info(f"Task return: {ret}")
+
+        task.future.set_result(ret)
+        assert task.future.done() is True
+        assert task.future.result() == ret
+
+    @pytest.mark.asyncio
+    async def test_coroutine_async_task_aiohttp(self):
+        task = AsyncTask(
+            aiohttp_request, "https://scrapeme.live/shop/", "http://127.0.0.1:7890"
+        )
+        start = time.perf_counter()
+        ret = await task.func(*task.args, **task.kwargs)
+        end = time.perf_counter()
+        logger.debug(f"Task finish in {end - start} seconds")
+        logger.debug(f"Task return: {ret}")
 
         task.future.set_result(ret)
         assert task.future.done() is True
@@ -119,6 +141,22 @@ class TestCoroutineAsyncPool:
         assert future.done() and future.result() == 1
         assert end - start <= 0.7
 
+    # @pytest.mark.asyncio
+    # async def test_coroutine_async_pool_submit_aiohttp_request(self):
+    #     """Submit one task"""
+    #     await self.get_pool()
+    #     task = AsyncTask(aiohttp_request, "https://scrapeme.live/shop/", "http://127.0.0.1:7890")
+    #     start = time.perf_counter()
+    #     future = await self.pool.submit(task)
+    #     assert self.pool.task_queue.qsize() == 1
+    #     assert self.pool.is_finish is False
+    #
+    #     await future
+    #     end = time.perf_counter()
+    #     assert self.pool.is_finish is True
+    #     assert future.done()
+    #     logger.debug(f"res: {future.result()}")
+
     @pytest.mark.asyncio
     async def test_coroutine_async_pool_submit_all(self):
         await self.get_pool()
@@ -151,7 +189,7 @@ class TestCoroutineAsyncPool:
         futures = await self.pool.submit_all(tasks)
         assert self.pool.is_finish is False
 
-        await self.pool.shutdown(0.5, cancel_queue=True)
+        await self.pool.shutdown(0.5, cancel_queue=True, cancel_tasks=False)
         assert self.pool.is_finish is True
         assert self.pool.task_queue.empty() is True
         end = time.perf_counter()
@@ -167,7 +205,7 @@ class TestCoroutineAsyncPoolCollector:
         start = time.perf_counter()
 
         async with AsyncPoolCollector.create_pool(
-            100, 1000, asyncio.get_event_loop()
+            100, 1000, asyncio.get_event_loop(), cancel_tasks=False
         ) as pool:
             future = await pool.submit(task)
 
@@ -190,7 +228,7 @@ class TestCoroutineAsyncPoolCollector:
         start = time.perf_counter()
 
         async with AsyncPoolCollector.create_pool(
-            100, 1000, asyncio.get_event_loop()
+            100, 1000, asyncio.get_event_loop(), cancel_tasks=False
         ) as pool:
             future = await pool.submit_all(tasks)
             assert pool.is_finish is False
@@ -207,7 +245,7 @@ class TestCoroutineAsyncPoolCollector:
         start = time.perf_counter()
 
         async with AsyncPoolCollector.create_pool(
-            100, 1000, asyncio.get_event_loop()
+            100, 1000, asyncio.get_event_loop(), cancel_tasks=False
         ) as pool:
             futures = await pool.submit_all(tasks)
             assert pool.is_finish is False
@@ -228,7 +266,7 @@ class TestCoroutineAsyncPoolCollector:
         start = time.perf_counter()
 
         async with AsyncPoolCollector.create_pool(
-            100, 1000, asyncio.get_event_loop()
+            100, 1000, asyncio.get_event_loop(), cancel_tasks=False
         ) as pool:
             futures = await pool.submit_all(tasks)
             assert pool.is_finish is False
@@ -243,7 +281,7 @@ class TestCoroutineAsyncPoolCollector:
                 if num_done_tasks == 100:
                     break
                 result_list.append(future.result())
-
+            logger.debug(f"result: {result_list}")
             assert pool.is_finish is True
             assert pool.remaining_tasks == 0
             assert pool.running_tasks == 0

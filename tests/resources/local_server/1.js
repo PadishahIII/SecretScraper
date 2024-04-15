@@ -1,4 +1,6 @@
-Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+function secret() {
+    return `
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit.
 Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
 Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
 nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in
@@ -45,3 +47,6 @@ pretium eros tellus, at dapibus mi feugiat eget. Phasellus sit amet maximus
 massa. Vivamus malesuada nisl urna, in interdum dui tempus ac.
 
 Email: example@example.com
+
+    `
+}

@@ -1,4 +1,5 @@
 """URL filters that determine whether or not a URL should be crawled"""
+
 import fnmatch
 from typing import List, Protocol, Set
 

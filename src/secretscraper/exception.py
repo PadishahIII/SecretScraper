@@ -15,8 +15,11 @@ class AsyncPoolException(SecretScraperException):
 
 class HandlerException(SecretScraperException):
     """Exception raised by handlers module"""
+
     pass
+
 
 class CrawlerException(SecretScraperException):
     """Exception raised by crawler module"""
+
     pass

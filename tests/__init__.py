@@ -1,9 +1,11 @@
 """Test"""
+
 import functools
 import time
 from pathlib import Path
 
 from secretscraper.config import settings
+from secretscraper.log import init_log
 
 
 def merge_test_settings():
@@ -31,3 +33,6 @@ def duration(func):
         return ret
 
     return wrapper
+
+
+init_log()

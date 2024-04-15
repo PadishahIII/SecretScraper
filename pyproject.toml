@@ -41,10 +41,10 @@ build-backend = "poetry.core.masonry.api"
 testpaths = "tests"
 python_files = "tests.py test_*.py *_tests.py"
 log_cli = true
-log_cli_level = "INFO"
+log_cli_level = "DEBUG"
 log_cli_format = "%(asctime)s [%(levelname)8s] %(message)s (%(filename)s:%(lineno)s)"
 log_cli_date_format = "%Y-%m-%d %H:%M:%S"
-addopts = "--durations=10 --cov-report html --cov=src"
+addopts = "--durations=10 " #--full-trace --cov-report html --cov=src
 junit_duration_report = "total"
 filterwarnings = [
     "ignore"

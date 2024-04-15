@@ -44,7 +44,7 @@ def init_log() -> None:
         "handlers": {
             "console": {
                 "formatter": verbose_formatter(settings.VERBOSE),
-                "level": "DEBUG",
+                "level": "INFO",
                 "class": "logging.StreamHandler",
             },
             "file": {

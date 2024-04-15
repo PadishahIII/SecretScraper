@@ -1,4 +1,5 @@
 """Handler module for extracting data from HTML pages and other text files crawled from website"""
+
 import queue
 import re
 import typing
@@ -18,12 +19,11 @@ BSResult = Tag | NavigableString | None
 class Handler(Protocol):
     """Base class for different types of handlers"""
 
-    def handle(self, text: str) -> typing.Iterable[Secret]:
-        ...
+    def handle(self, text: str) -> typing.Iterable[Secret]: ...
 
 
 class ReRegexHandler(Handler):
-    """Regex handler using the `re` module, simple but have lowest performance."""
+    """(Deprecated) Regex handler using the `re` module, simple but have lowest performance."""
 
     def __init__(self, rules: dict[str, str]):
         """
@@ -52,8 +52,9 @@ class ReRegexHandler(Handler):
 class HyperscanRegexHandler(Handler):
     """Regex handler using `hyperscan` module"""
 
-    def __init__(self, rules: dict[str, str], lazy_init: bool = False,
-                 hs_flag: int = 0):
+    def __init__(
+        self, rules: dict[str, str], lazy_init: bool = False, hs_flag: int = 0
+    ):
         """
 
         :param rules: regex rules dictionary with keys indicating type and values indicating the regex
@@ -63,7 +64,9 @@ class HyperscanRegexHandler(Handler):
         # self.output_queue: queue.Queue[Secret] = queue.Queue()
         self.rules = rules
         self._init: bool = False
-        self._hs_flag: int = hs_flag | hyperscan.HS_FLAG_SOM_LEFTMOST
+        self._hs_flag: int = (
+            hs_flag | hyperscan.HS_FLAG_SOM_LEFTMOST | hyperscan.HS_FLAG_CASELESS
+        )
         self._db: typing.Optional[hyperscan.Database] = None
         self.patterns: dict[int, bytes] = dict()  # pattern id => regex in bytes
         self.types: dict[int, str] = dict()  # pattern id => type
@@ -79,11 +82,12 @@ class HyperscanRegexHandler(Handler):
             self.patterns[index] = regex.encode("utf-8")
             self.types[index] = type_str
 
-        self._db.compile(expressions=list(self.patterns.values())
-                         , ids=list(self.patterns.keys())
-                         , elements=len(self.patterns)
-                         , flags=flags
-                         )
+        self._db.compile(
+            expressions=list(self.patterns.values()),
+            ids=list(self.patterns.keys()),
+            elements=len(self.patterns),
+            flags=flags,
+        )
 
         self._init = True
 
@@ -97,21 +101,30 @@ class HyperscanRegexHandler(Handler):
 
         results: list[Secret] = list()
 
-        def on_match(id: int, froms: int, to: int, flags: int, context: typing.Optional[typing.Any] = None) -> \
-            typing.Optional[bool]:
+        def on_match(
+            id: int,
+            froms: int,
+            to: int,
+            flags: int,
+            context: typing.Optional[typing.Any] = None,
+        ) -> typing.Optional[bool]:
             match = text[froms:to]
             type = self.types.get(id)
             results.append(Secret(type, data=match))
             return None
 
-        self._db.scan(text.encode("utf8"), match_event_handler=on_match)  # block call until all regex operation finish
+        self._db.scan(
+            text.encode("utf8"), match_event_handler=on_match
+        )  # block call until all regex operation finish
         return results
 
 
 class BSHandler(Handler):
     """BeautifulSoup handler that filter html elements on demand"""
 
-    def __init__(self, filter_func: typing.Callable[[BeautifulSoup], list[BSResult]]) -> None:
+    def __init__(
+        self, filter_func: typing.Callable[[BeautifulSoup], list[BSResult]]
+    ) -> None:
         self.filter = filter_func
 
     def handle(self, text: str) -> typing.Iterable[Secret]:
