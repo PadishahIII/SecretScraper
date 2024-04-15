@@ -60,7 +60,7 @@ class TestCoroutineAsyncWorker:
     @pytest.mark.asyncio
     async def test_coroutine_async_task_aiohttp(self):
         task = AsyncTask(
-            aiohttp_request, "https://scrapeme.live/shop/", "http://127.0.0.1:7890"
+            aiohttp_request, "https://www.baidu.com"
         )
         start = time.perf_counter()
         ret = await task.func(*task.args, **task.kwargs)
