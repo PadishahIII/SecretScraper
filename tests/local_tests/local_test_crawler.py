@@ -33,15 +33,12 @@ def aiohttp_client() -> aiohttp.ClientSession:
     return aiohttp.ClientSession()
 
 
-def test_crawler_zero_depth(regex_dict, start_urls):
+def test_crawler_scrapeme(regex_dict):
     """
     Test max depth and normal work
-    :param regex_dict:
-    :param start_urls:
-    :return:
     """
     handler = HyperscanRegexHandler(regex_dict)
-    max_depth = 0
+    max_depth = 1
     urlfilter = ChainedURLFilter(
         [
             DomainWhiteListURLFilter(
@@ -54,7 +51,9 @@ def test_crawler_zero_depth(regex_dict, start_urls):
     )
     max_page_num = 0
     crawler = Crawler(
-        start_urls=start_urls,
+        start_urls=[
+            "https://scrapeme.live/shop/",
+        ],
         # client=aiohttp_client,
         url_filter=urlfilter,
         parser=URLParser(),
@@ -69,7 +68,7 @@ def test_crawler_zero_depth(regex_dict, start_urls):
     formatter = Formatter()
     crawler.start()
     for url in crawler.visited_urls:
-        assert url.depth <= max_depth
+        assert max_depth <= 0 or url.depth <= max_depth
         assert urlfilter.doFilter(url.url_object) is True
     if max_page_num > 0:
         assert crawler.total_page <= max_page_num
@@ -77,8 +76,8 @@ def test_crawler_zero_depth(regex_dict, start_urls):
     logger.info(
         f"found urls: {formatter.output_found_domains(list(crawler.found_urls))}"
     )
-    visited_urls_str = "\n".join(str(url) for url in crawler.visited_urls)
-    logger.info(f"visited_urls: {visited_urls_str}")
+    # visited_urls_str = "\n".join(str(url) for url in crawler.visited_urls)
+    # logger.info(f"visited_urls: {visited_urls_str}")
     logger.info(f"Hierarchy: {formatter.output_url_hierarchy(crawler.url_dict)}")
     logger.info(f"Secrets: {formatter.output_secrets(crawler.url_secrets)}")
     logger.info(f"{formatter.output_js(crawler.js_dict)}")

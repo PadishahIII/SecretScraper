@@ -15,6 +15,7 @@ class URLNode:
 
     url: str = field(hash=False, compare=False)
     url_object: ParseResult = field(hash=True, compare=True)
+    response_status: str = field(default="Unknown", hash=False, compare=False)
     depth: int = field(default=0, hash=False, compare=False)
     parent: typing.Optional["URLNode"] = field(default=None, hash=False, compare=False)
 

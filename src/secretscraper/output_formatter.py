@@ -23,16 +23,16 @@ class Formatter:
         """Output the url hierarchy"""
         url_hierarchy = ""
         for base, urls in url_dict.items():
-            url_set = {str(url.url) for url in urls}
+            url_set = {f"{str(url.url)} [{str(url.response_status)}]" for url in urls}
             urls_str = "\n".join(url_set)
-            url_hierarchy += f"{len(url_set)} URLs from {base.url}(depth:{base.depth}):\n{urls_str}\n\n"
+            url_hierarchy += f"{len(url_set)} URLs from {base.url} [{str(base.response_status)}] (depth:{base.depth}):\n{urls_str}\n\n"
         return url_hierarchy
 
     def output_js(self, js_dict: dict[URLNode, typing.Iterable[URLNode]]) -> str:
         """Output the url hierarchy"""
         js_str = ""
         for base, urls in js_dict.items():
-            url_set = {str(url.url) for url in urls}
+            url_set = {f"{str(url.url)} [{str(url.response_status)}]" for url in urls}
             urls_str = "\n".join(url_set)
             js_str += f"{len(url_set)} JS from {base.url}:\n{urls_str}\n\n"
         return js_str
@@ -54,7 +54,5 @@ class Formatter:
                     f"{str(secret.type)}: {str(secret.data)}" for secret in secrets
                 }
                 secrets_str = "\n".join(secret_set)
-                url_secrets_str += (
-                    f"{len(secret_set)} Secrets found in {url.url}:\n{secrets_str}\n\n"
-                )
+                url_secrets_str += f"{len(secret_set)} Secrets found in {url.url} {str(url.response_status)}:\n{secrets_str}\n\n"
         return url_secrets_str

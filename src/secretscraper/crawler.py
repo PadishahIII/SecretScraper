@@ -151,6 +151,7 @@ class Crawler:
         self.total_page += 1
         response = await self.fetch(url_node.url)
         if response is not None:  # and response.status == 200
+            url_node.response_status = str(response.status)
             try:
                 response_text: str = await response.text(
                     encoding="utf8", errors="ignore"
