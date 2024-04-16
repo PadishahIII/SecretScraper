@@ -216,8 +216,11 @@ class Crawler:
         """
         is_text_like = False
         is_html = False
-        content_type = response.headers['Content-Type']
-        if response.headers['Content-Type'].startswith("text"):
+        try:
+            content_type = response.headers['content-type']
+        except KeyError:
+            content_type = ""
+        if content_type.startswith("text"):
             is_text_like = True
             if content_type.strip() == "text/html":
                 is_html = True
@@ -298,7 +301,7 @@ class Crawler:
         except KeyboardInterrupt:
             pass  # ignore
         except Exception as e:
-            logger.error(f"Unexpected error: {e} while fetching {url}")
+            logger.error(f"Unexpected error: {e.__class__} while fetching {url}")
         return response
 
     async def clean(self):

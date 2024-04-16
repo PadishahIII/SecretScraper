@@ -93,6 +93,7 @@ class CrawlerFacade:
             except Exception as e:
                 self.print_func(f"Unexpected error: {e}.\nExiting...")
                 self.crawler.close_all()
+                # raise FacadeException from e
 
     def create_crawler(self) -> Crawler:
         """Create a Crawler"""
