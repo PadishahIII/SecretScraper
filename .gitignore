@@ -6,6 +6,13 @@ Thumbs.db
 ehthumbs.db
 ehthumbs_vista.db
 
+htmlcov
+docs
+.tox
+.benchmarks
+log
+*.jar
+
 # Dump file
 *.stackdump
 
