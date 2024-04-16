@@ -23,3 +23,7 @@ class CrawlerException(SecretScraperException):
     """Exception raised by crawler module"""
 
     pass
+
+class FacadeException(SecretScraperException):
+    """Exception raised by facade classes"""
+    pass

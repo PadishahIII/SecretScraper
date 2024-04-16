@@ -44,12 +44,12 @@ def init_log() -> None:
         "handlers": {
             "console": {
                 "formatter": verbose_formatter(settings.VERBOSE),
-                "level": "INFO",
+                "level": log_level,
                 "class": "logging.StreamHandler",
             },
             "file": {
                 "class": "logging.handlers.RotatingFileHandler",
-                "level": "DEBUG",
+                "level": "INFO",
                 "formatter": verbose_formatter(settings.VERBOSE),
                 "filename": os.path.join(settings.LOGPATH, "all.log"),
                 "maxBytes": 1024 * 1024 * 1024 * 200,  # 200M

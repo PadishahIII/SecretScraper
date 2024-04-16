@@ -23,7 +23,7 @@ Internal IP: 10.0.0.1
 Internal IP: 192.168.1.1.1.1
 Cloud key: Accesskeyid=xxxx AccessKeySecret
 Shiro: xxx=deleteme rememberme=true
-APIKey: 9c65a3ebabdb448b4476b114ee574a6f  E9d7e49a027469b78ad956903617f8ed 00e3d061e7debe5f88aec44e0b549b76
+APIKey: '9c65a3ebabdb448b4476b114ee574a6f'  "E9d7e49a027469b78ad956903617f8ed" key=00e3d061e7debe5f88aec44e0b549b76"
 
 Suspendisse potenti. Nunc nec dui ac mauris eleifend lacinia.
 Fusce convallis neque at lectus venenatis, sit amet volutpat

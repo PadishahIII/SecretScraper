@@ -10,6 +10,7 @@ from typing import Set
 from urllib.parse import urlparse
 
 import aiohttp
+import dynaconf
 from aiohttp import ClientResponse
 
 from secretscraper.coroutinue import AsyncPoolCollector, AsyncTask
@@ -18,7 +19,9 @@ from secretscraper.filter import URLFilter
 from secretscraper.handler import Handler
 from secretscraper.urlparser import URLParser
 
+from .config import settings
 from .exception import CrawlerException
+from .util import Range
 
 logger = logging.getLogger(__name__)
 
@@ -33,12 +36,15 @@ class Crawler:
         url_filter: URLFilter,
         parser: URLParser,
         handler: Handler,
+        # allowed_status: list[Range] = None,
         max_page_num: int = 0,
         max_depth: int = 3,
         num_workers: int = 100,
         proxy: str = None,
+        headers: dict = None,
         verbose: bool = False,
         timeout: float = 5,
+        debug: bool = False
     ):
         """
 
@@ -47,6 +53,7 @@ class Crawler:
         :param url_filter: determine whether a url should be crawled
         :param parser: extract child url nodes from html
         :param handler: how to deal with the crawl result
+        # :param allowed_status: filter response status. None for no filter
         :param max_page_num: max number of urls to crawl, 0 for no limit
         :param max_depth: max url depth, should greater than 0
         :param num_workers: worker number of the async pool
@@ -65,6 +72,10 @@ class Crawler:
         self.num_workers = num_workers
         self.verbose = verbose
         self.timeout = timeout
+        self.headers = headers
+        self.debug = debug
+        if self.debug:
+            logger.setLevel(logging.DEBUG)
 
         self.visited_urls: Set[URLNode] = set()
         self.found_urls: Set[URLNode] = set()  # newly found urls
@@ -91,7 +102,17 @@ class Crawler:
 
     def start(self):
         """Start event loop"""
-        self._event_loop.run_until_complete(self.main_task())
+        try:
+            self._event_loop.run_until_complete(self.main_task())
+        except asyncio.CancelledError:
+            pass  # ignore
+
+    def close_all(self):
+        """Close crawler, cancel all tasks"""
+        try:
+            self._event_loop.run_until_complete(self.clean())
+        except asyncio.CancelledError:
+            pass  # ignore
 
     async def main_task(self):
         """A wrapper"""
@@ -110,7 +131,7 @@ class Crawler:
                 url_node = URLNode(url=url, url_object=url_obj, depth=0, parent=None)
                 # self.found_urls.add(url_node)
                 if self.filter.doFilter(url_node.url_object):
-                    logger.info(f"Target: {url}")
+                    logger.debug(f"Target: {url}")
                     self.visited_urls.add(url_node)
                     self.working_queue.put(url_node)
 
@@ -187,8 +208,11 @@ class Crawler:
         Extract and extend `url_node` only if `response` is text-like.
         """
         is_text_like = False
+        is_html = False
         if response.content_type.startswith("text"):
             is_text_like = True
+            if response.content_type.strip() == "text/html":
+                is_html = True
         elif response.content_type.startswith("application"):
             if response.content_type.endswith(
                 "octet-stream"
@@ -211,6 +235,10 @@ class Crawler:
         url_children: set[URLNode] = self.parser.extract_urls(url_node, response_text)
         if len(url_children) > 0:
             self.url_dict[url_node] = set()
+        elif is_html and (
+            url_node not in self.url_dict.keys() or self.url_dict[url_node] is None):
+            self.url_dict[url_node] = set()
+
         for child in url_children:
             if child is not None and child not in self.visited_urls:
                 self.found_urls.add(child)
@@ -237,6 +265,7 @@ class Crawler:
             response = await self.client.get(
                 url,
                 allow_redirects=False,
+                headers=self.headers,
                 proxy=self.proxy,
                 verify_ssl=False,
                 timeout=self.timeout,
@@ -249,6 +278,12 @@ class Crawler:
             logger.error(f"Connection error for {url}: {e}")
         except aiohttp.client_exceptions.InvalidURL as e:
             logger.error(f"Invalid URL for {url}: {e}")
+        except aiohttp.client_exceptions.ServerDisconnectedError as e:
+            logger.error(f"Disconnect from {url} manually")
+        except KeyboardInterrupt:
+            pass  # ignore
+        except Exception as e:
+            logger.error(f"Unknown error: {e} while fetching {url}")
         return response
 
     async def clean(self):
@@ -261,7 +296,8 @@ class Crawler:
             await self.pool.close()
         except:
             pass  # ignore
-        self.close.set()
+        if not self.close.is_set():
+            self.close.set()
         logger.debug(f"Closing")
 
     async def consumer(self):

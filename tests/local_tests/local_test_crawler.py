@@ -64,6 +64,7 @@ def test_crawler_scrapeme(regex_dict):
         proxy="socks://127.0.0.1:7890",
         verbose=False,
         timeout=10,
+        debug=False
     )
     formatter = Formatter()
     crawler.start()
@@ -76,8 +77,6 @@ def test_crawler_scrapeme(regex_dict):
     logger.info(
         f"found urls: {formatter.output_found_domains(list(crawler.found_urls))}"
     )
-    # visited_urls_str = "\n".join(str(url) for url in crawler.visited_urls)
-    # logger.info(f"visited_urls: {visited_urls_str}")
     logger.info(f"Hierarchy: {formatter.output_url_hierarchy(crawler.url_dict)}")
     logger.info(f"Secrets: {formatter.output_secrets(crawler.url_secrets)}")
     logger.info(f"{formatter.output_js(crawler.js_dict)}")

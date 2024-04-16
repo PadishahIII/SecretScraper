@@ -1,8 +1,11 @@
 """Common utility functions."""
+from collections import namedtuple
 
 from dynaconf import LazySettings
 
 from .exception import SecretScraperException
+
+Range = namedtuple("Range", ["start", "end"])
 
 
 def read_rules_from_setting(settings: LazySettings) -> dict[str, str]:
