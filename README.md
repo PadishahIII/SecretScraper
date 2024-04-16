@@ -17,6 +17,10 @@ information via regular expression.
 - Built-in regex to search for sensitive information
 - Flexible configuration in yaml format
 
+## Prerequisite
+- Platform: MaxOS or Ubuntu, no support for Windows temporarily(due to [hyperscan](https://pypi.org/project/hyperscan/) is employed in this project).
+- Python Version: 3.11
+
 ## Usage
 
 ### Install
