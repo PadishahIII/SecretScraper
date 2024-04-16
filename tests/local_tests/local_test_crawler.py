@@ -64,7 +64,7 @@ def test_crawler_scrapeme(regex_dict):
         max_page_num=max_page_num,
         max_depth=max_depth,
         num_workers=100,
-        proxy="socks://127.0.0.1:7890",
+        proxy="http://127.0.0.1:7890",
         verbose=False,
         timeout=10,
         debug=False,
@@ -116,7 +116,7 @@ def test_crawler_local(regex_dict, start_urls):
         max_page_num=max_page_num,
         max_depth=max_depth,
         num_workers=100,
-        # proxy="socks://127.0.0.1:7890",
+        # proxy="http://127.0.0.1:7890",
         verbose=False,
         timeout=10,
     )

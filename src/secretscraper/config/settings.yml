@@ -3,7 +3,7 @@ debug: false
 loglevel: warning
 logpath: log
 
-proxy: "" # socks://127.0.0.1:7890
+proxy: "" # http://127.0.0.1:7890
 max_depth: 1 # 0 for no limit
 max_page_num: 1000 # 0 for no limit
 timeout: 5

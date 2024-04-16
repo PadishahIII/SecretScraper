@@ -13,7 +13,7 @@ from secretscraper.handler import (
     HyperscanRegexHandler,
     ReRegexHandler,
 )
-from tests import duration
+# from tests import duration
 
 from . import settings
 

@@ -14,7 +14,7 @@ from secretscraper.cmdline import main
 from secretscraper.facade import CrawlerFacade
 from secretscraper.log import init_log
 
-init_log()
+# init_log()
 logger = logging.getLogger(__file__)
 
 
@@ -60,7 +60,7 @@ Validator = namedtuple("Validator", ["get_attr_func", "expected_value"])
                 "--cookie=MyCookie",
                 "--max-page=100",
                 "--max-depth=3",
-                "-x socks://127.0.0.1:7890",
+                "-x http://127.0.0.1:7890",
                 "-F",
             ],
             [
@@ -68,7 +68,7 @@ Validator = namedtuple("Validator", ["get_attr_func", "expected_value"])
                 (lambda setting: setting["headers"]["Cookie"], "MyCookie"),
                 (lambda setting: setting["max_depth"], 3),
                 (lambda setting: setting["max_page_num"], 100),
-                (lambda setting: setting["proxy"], "socks://127.0.0.1:7890"),
+                (lambda setting: setting["proxy"], "http://127.0.0.1:7890"),
                 (lambda setting: setting["follow_redirects"], True),
             ],
         ),
@@ -103,14 +103,14 @@ def test_crawler_facade_update_settings(
                 "--cookie=MyCookie",
                 "--max-page=100",
                 "--max-depth=3",
-                "-x socks://127.0.0.1:7890",
+                "-x http://127.0.0.1:7890",
             ],
             [
                 (lambda crawler: crawler.headers["User-Agent"], "MyUA"),
                 (lambda crawler: crawler.headers["Cookie"], "MyCookie"),
                 (lambda crawler: crawler.max_depth, 3),
                 (lambda crawler: crawler.max_page_num, 100),
-                (lambda crawler: crawler.proxy, "socks://127.0.0.1:7890"),
+                (lambda crawler: crawler.proxy, "http://127.0.0.1:7890"),
                 (lambda crawler: len(crawler.start_urls), 1),
                 (lambda crawler: crawler.follow_redirects, False),
             ],
@@ -188,9 +188,13 @@ def test_crawler_facade_update_crawler(
 
     for validator in validators:
         validator = Validator(*validator)
-        assert True is validate_setting(
-            facade_obj.crawler, validator.get_attr_func, validator.expected_value
-        )
+        try:
+            assert True is validate_setting(
+                facade_obj.crawler, validator.get_attr_func, validator.expected_value
+            )
+        except AssertionError as e:
+            logger.error(f"Expected: {validator.expected_value}")
+            raise Exception(f"Excepted:xxx {validator.expected_value}")
 
 
 @pytest.mark.parametrize(

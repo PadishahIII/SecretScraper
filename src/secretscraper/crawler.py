@@ -11,6 +11,7 @@ from urllib.parse import urlparse
 
 import aiohttp
 import dynaconf
+import httpx
 from aiohttp import ClientResponse
 
 from secretscraper.coroutinue import AsyncPoolCollector, AsyncTask
@@ -18,6 +19,7 @@ from secretscraper.entity import URL, Secret, URLNode
 from secretscraper.filter import URLFilter
 from secretscraper.handler import Handler
 from secretscraper.urlparser import URLParser
+from httpx import AsyncClient
 
 from .config import settings
 from .exception import CrawlerException
@@ -93,9 +95,10 @@ class Crawler:
             dict()
         )  # url and secrets found from it
         self._event_loop = asyncio.new_event_loop()
-        self.client: aiohttp.ClientSession = aiohttp.ClientSession(
-            loop=self._event_loop
-        )  # assign event loop to client
+        # self.client: aiohttp.ClientSession = aiohttp.ClientSession(
+        #     loop=self._event_loop
+        # )  # assign event loop to client
+        self.client: httpx.AsyncClient = AsyncClient(verify=False, proxies=self.proxy)
         self.close = threading.Event()  # whether the crawler is closed
         self.close.clear()
         self.pool: AsyncPoolCollector = AsyncPoolCollector.create_pool(
@@ -174,14 +177,16 @@ class Crawler:
         self.total_page += 1
         response = await self.fetch(url_node.url)
         if response is not None:  # and response.status == 200
-            url_node.response_status = str(response.status)
-            try:
-                response_text: str = await response.text(
-                    encoding="utf8", errors="ignore"
-                )
-            except TimeoutError:
-                logger.error(f"Timeout while reading response from {url_node.url}")
-                return
+            url_node.response_status = str(response.status_code)
+
+            response_text: str = response.text
+            # try:
+            #     response_text: str = await response.text(
+            #         encoding="utf8", errors="ignore"
+            #     )
+            # except TimeoutError:
+            #     logger.error(f"Timeout while reading response from {url_node.url}")
+            #     return
             # call handler and urlparser
             # extract secrets TODO: nonblocking extract
             await self.extract_secrets(url_node, response_text)
@@ -203,7 +208,7 @@ class Crawler:
         logger.debug(f"Extract secret of number {len(list(secrets))} from {url_node}")
 
     async def extract_links_and_extend(
-        self, url_node: URLNode, response: aiohttp.ClientResponse, response_text: str
+        self, url_node: URLNode, response: httpx.Response, response_text: str
     ):
         """Extract links from response and extend the task queue in demand
         This function only works if the response is text-like, but regardless of whether it is html or not.
@@ -211,14 +216,15 @@ class Crawler:
         """
         is_text_like = False
         is_html = False
-        if response.content_type.startswith("text"):
+        content_type = response.headers['Content-Type']
+        if response.headers['Content-Type'].startswith("text"):
             is_text_like = True
-            if response.content_type.strip() == "text/html":
+            if content_type.strip() == "text/html":
                 is_html = True
-        elif response.content_type.startswith("application"):
-            if response.content_type.endswith(
+        elif content_type.startswith("application"):
+            if content_type.endswith(
                 "octet-stream"
-            ) or response.content_type.endswith("pdf"):
+            ) or content_type.endswith("pdf"):
                 is_text_like = False
             else:
                 is_text_like = True
@@ -258,41 +264,47 @@ class Crawler:
                     self.url_dict[url_node].add(child)
                 logger.debug(f"New link found: {child.url} from {url_node.url}")
 
-    async def fetch(self, url: str) -> ClientResponse:
+    async def fetch(self, url: str) -> httpx.Response:
         """Wrapper for sending http request
         If exception occurs, return None
         """
         logger.debug(f"Fetching {url}")
         response = None
         try:
+            # response = await self.client.get(
+            #     url,
+            #     allow_redirects=self.follow_redirects,
+            #     headers=self.headers,
+            #     proxy=self.proxy,
+            #     verify_ssl=False,
+            #     timeout=self.timeout,
+            # )
             response = await self.client.get(
                 url,
-                allow_redirects=self.follow_redirects,
                 headers=self.headers,
-                proxy=self.proxy,
-                verify_ssl=False,
+                follow_redirects=self.follow_redirects,
                 timeout=self.timeout,
             )
-            logger.debug(f"Fetch {url}, status: {response.status}")
+            logger.debug(f"Fetch {url}, status: {response.status_code}")
 
         except TimeoutError:
             logger.error(f"Timeout while fetching {url}")
-        except aiohttp.client_exceptions.ClientConnectorError as e:
+        except httpx.ConnectError as e:
             logger.error(f"Connection error for {url}: {e}")
-        except aiohttp.client_exceptions.InvalidURL as e:
+        except httpx.InvalidURL as e:
             logger.error(f"Invalid URL for {url}: {e}")
-        except aiohttp.client_exceptions.ServerDisconnectedError as e:
-            logger.error(f"Disconnect from {url} manually")
+        except httpx.TimeoutException as e:
+            logger.error(f"Timeout while fetching {url} ")
         except KeyboardInterrupt:
             pass  # ignore
         except Exception as e:
-            logger.error(f"Unknown error: {e} while fetching {url}")
+            logger.error(f"Unexpected error: {e} while fetching {url}")
         return response
 
     async def clean(self):
         """Close pool, cancel tasks, close http client session"""
         try:
-            await self.client.close()
+            await self.client.aclose()
         except:
             pass  # ignore
         try:

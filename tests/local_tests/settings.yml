@@ -1,8 +1,17 @@
-# You can define test configuration, and it will overwrite the default settings when running tests.
+verbose: false
 debug: false
-benchmark: true
-max_depth: 4
+loglevel: warning
+logpath: log
+
+proxy: "" # http://127.0.0.1:7890
+max_depth: 1 # 0 for no limit
+max_page_num: 1000 # 0 for no limit
+timeout: 5
+follow_redirects: false
+workers_num: 1000
 headers:
+  Accept: "*/*"
+  Cookie: ""
   User-Agent: Test-UA
 
 rules:
@@ -25,7 +34,7 @@ rules:
     regex: \b(([a-z0-9][_|\.])*[a-z0-9]+@([a-z0-9][-|_|\.])*[a-z0-9]+\.([a-z]{2,}))\b
     loaded: true
   - name: Internal IP
-    regex: \b(?:[0-9]{1,3}\.)[0-9]{1,3}\.(?:[0-9]{1,3}\.)[0-9]{1,3}\b
+    regex: '[^0-9]((127\.0\.0\.1)|(10\.\d{1,3}\.\d{1,3}\.\d{1,3})|(172\.((1[6-9])|(2\d)|(3[01]))\.\d{1,3}\.\d{1,3})|(192\.168\.\d{1,3}\.\d{1,3}))'
     loaded: true
   - name: Cloud Key
     regex: \b((accesskeyid)|(accesskeysecret)|\b(LTAI[a-z0-9]{12,20}))\b
@@ -34,5 +43,5 @@ rules:
     regex: (=deleteMe|rememberMe=)
     loaded: true
   - name: Suspicious API Key
-    regex: \W\w{31,40}\W
+    regex: "[\"'][0-9a-zA-Z]{32}['\"]"
     loaded: true

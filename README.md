@@ -110,7 +110,7 @@ Options:
   -s, --status TEXT            Filter response status to display, seperated by
                                commas, e.g. 200,300-400
   -x, --proxy TEXT             Set proxy, e.g. http://127.0.0.1:8080,
-                               socks://127.0.0.1:7890
+                               http://127.0.0.1:7890
   -H, --hide-regex             Hide regex search result
   -F, --follow-redirects       Follow redirects
   -u, --url TEXT               Target url
@@ -146,7 +146,7 @@ debug: false
 loglevel: warning
 logpath: log
 
-proxy: "" # socks://127.0.0.1:7890
+proxy: "" # http://127.0.0.1:7890
 max_depth: 1 # 0 for no limit
 max_page_num: 1000 # 0 for no limit
 timeout: 5
