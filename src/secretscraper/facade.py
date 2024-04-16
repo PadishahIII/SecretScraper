@@ -1,4 +1,5 @@
 """Facade classes"""
+
 import copy
 import functools
 import logging
@@ -12,8 +13,7 @@ import dynaconf
 
 from .crawler import Crawler
 from .exception import FacadeException
-from .filter import (ChainedURLFilter, DomainBlackListURLFilter,
-                     DomainWhiteListURLFilter)
+from .filter import ChainedURLFilter, DomainBlackListURLFilter, DomainWhiteListURLFilter
 from .handler import HyperscanRegexHandler
 from .output_formatter import Formatter
 from .urlparser import URLParser
@@ -27,8 +27,12 @@ warnings.filterwarnings("ignore")  # ignore all warnings
 class CrawlerFacade:
     """Crawler facade"""
 
-    def __init__(self, full_settings: dynaconf.Dynaconf, custom_settings: dict,
-                 print_func: typing.Callable[[str], ...] = print) -> None:
+    def __init__(
+        self,
+        full_settings: dynaconf.Dynaconf,
+        custom_settings: dict,
+        print_func: typing.Callable[[str], ...] = print,
+    ) -> None:
         """
 
         :param full_settings: dynaconf.Dynaconf
@@ -42,21 +46,35 @@ class CrawlerFacade:
         self.outfile = pathlib.Path(__file__).parent / "crawler.log"
         self.print_func = print_func
         self.debug: bool = False
+        self.follow_redirects: bool = False
         self.crawler: Crawler = self.create_crawler()
 
     def start(self):
         """Start the crawler and output"""
         with self.outfile.open("w") as f:
             try:
+
                 def print_func(content: str, **kwargs) -> None:
                     self.print_func(content, **kwargs)
                     self.print_func(content, file=f, **kwargs)
 
-                def print_func_colorful(content: str, fg: str = None, bg: str = None, blink=False, bold=False):
-                    print_func(click.style(content, fg=fg, bg=bg, blink=blink, bold=bold))
+                def print_func_colorful(
+                    content: str,
+                    fg: str = None,
+                    bg: str = None,
+                    blink=False,
+                    bold=False,
+                ):
+                    print_func(
+                        click.style(content, fg=fg, bg=bg, blink=blink, bold=bold)
+                    )
 
                 # print_func(f"Starting crawler...")
-                print_func_colorful(f"Target URLs: {', '.join(self.crawler.start_urls)}", bold=True, blink=True)
+                print_func_colorful(
+                    f"Target URLs: {', '.join(self.crawler.start_urls)}",
+                    bold=True,
+                    blink=True,
+                )
                 self.crawler.start()
 
                 # print_func_colorful(f"Total page: {self.crawler.total_page}")
@@ -65,7 +83,9 @@ class CrawlerFacade:
                 self.formatter.output_found_domains(list(self.crawler.found_urls), True)
 
                 if not self.hide_regex:
-                    print_func_colorful(f"{self.formatter.output_secrets(self.crawler.url_secrets)}")
+                    print_func_colorful(
+                        f"{self.formatter.output_secrets(self.crawler.url_secrets)}"
+                    )
                 print_func_colorful(f"{self.formatter.output_js(self.crawler.js_dict)}")
             except KeyboardInterrupt:
                 self.print_func("\nExiting...")
@@ -77,6 +97,9 @@ class CrawlerFacade:
     def create_crawler(self) -> Crawler:
         """Create a Crawler"""
         print_config = functools.partial(click.secho, fg="bright_black", bold=True)
+        # Follow redirects
+        if self.custom_settings.get("follow_redirects", False) is True:
+            self.settings["follow_redirects"] = True
         # Hide regex output
         if self.custom_settings.get("hide_regex", False) is True:
             self.hide_regex = True
@@ -84,25 +107,29 @@ class CrawlerFacade:
         allow_domains: str = self.custom_settings.get("allow_domains", "")
         disallow_domains: str = self.custom_settings.get("disallow_domains", "")
         if len(allow_domains) > 0:
-            urlfilter = ChainedURLFilter([
-                DomainWhiteListURLFilter(
-                    {domain.strip() for domain in allow_domains.split(",")}
-                ),
-                DomainBlackListURLFilter(
-                    {domain.strip() for domain in disallow_domains.split(",")}
-                )
-            ]
+            urlfilter = ChainedURLFilter(
+                [
+                    DomainWhiteListURLFilter(
+                        {domain.strip() for domain in allow_domains.split(",")}
+                    ),
+                    DomainBlackListURLFilter(
+                        {domain.strip() for domain in disallow_domains.split(",")}
+                    ),
+                ]
             )
         else:
-            urlfilter = ChainedURLFilter([
-                DomainBlackListURLFilter(
-                    {domain.strip() for domain in disallow_domains.split(",")}
-                )
-            ]
+            urlfilter = ChainedURLFilter(
+                [
+                    DomainBlackListURLFilter(
+                        {domain.strip() for domain in disallow_domains.split(",")}
+                    )
+                ]
             )
 
         # Build start urls
-        url_file: typing.Optional[pathlib.Path] = self.custom_settings.get("url_file", None)
+        url_file: typing.Optional[pathlib.Path] = self.custom_settings.get(
+            "url_file", None
+        )
         url: typing.Optional[str] = self.custom_settings.get("url", None)
         start_urls = set()
         if url is None and url_file is None:
@@ -134,10 +161,14 @@ class CrawlerFacade:
             self.settings.max_page_num = max_page
         if max_depth is not None:
             self.settings.max_depth = max_depth
-        print_config(f"Max depth: {self.settings['max_depth']}, Max page num: {self.settings['max_page_num']}", )
+        print_config(
+            f"Max depth: {self.settings['max_depth']}, Max page num: {self.settings['max_page_num']}",
+        )
 
         # Outfile
-        outfile: typing.Optional[pathlib.Path] = self.custom_settings.get("outfile", None)
+        outfile: typing.Optional[pathlib.Path] = self.custom_settings.get(
+            "outfile", None
+        )
         if outfile is not None:
             self.outfile = outfile
         print_config(f"Output file: {self.outfile}")
@@ -153,9 +184,13 @@ class CrawlerFacade:
                     max_status = status_ex.split("-")[1]
                     if min_status >= max_status:
                         raise FacadeException(f"Invalid status range: {status_ex}")
-                    allowed_status.append(Range(start=int(min_status), end=int(max_status) + 1))
+                    allowed_status.append(
+                        Range(start=int(min_status), end=int(max_status) + 1)
+                    )
                 else:
-                    allowed_status.append(Range(start=int(status_ex), end=int(status_ex) + 1))
+                    allowed_status.append(
+                        Range(start=int(status_ex), end=int(status_ex) + 1)
+                    )
         self.formatter._allowed_status = allowed_status
 
         # UA and Headers
@@ -170,13 +205,13 @@ class CrawlerFacade:
         # Proxy
         proxy: typing.Optional[str] = self.custom_settings.get("proxy", None)
         if proxy is not None:
-            self.settings['proxy'] = proxy.strip()
+            self.settings["proxy"] = proxy.strip()
             print_config(f"Using proxy {proxy}")
 
         # Verbose
         verbose: typing.Optional[bool] = self.custom_settings.get("verbose", None)
         if verbose is not None:
-            self.settings['verbose'] = verbose
+            self.settings["verbose"] = verbose
 
         # Read rules from config file
         rules: dict[str, str] = read_rules_from_setting(self.settings)
@@ -194,6 +229,7 @@ class CrawlerFacade:
             headers=headers,
             verbose=self.settings.get("verbose"),
             timeout=self.settings.get("timeout"),
-            debug=self.debug
+            debug=self.debug,
+            follow_redirects=self.settings["follow_redirects"],
         )
         return crawler

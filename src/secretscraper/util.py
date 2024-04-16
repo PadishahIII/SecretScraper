@@ -1,4 +1,5 @@
 """Common utility functions."""
+
 from collections import namedtuple
 
 from dynaconf import LazySettings

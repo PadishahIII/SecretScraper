@@ -44,7 +44,8 @@ class Crawler:
         headers: dict = None,
         verbose: bool = False,
         timeout: float = 5,
-        debug: bool = False
+        debug: bool = False,
+        follow_redirects: bool = False,
     ):
         """
 
@@ -76,6 +77,7 @@ class Crawler:
         self.debug = debug
         if self.debug:
             logger.setLevel(logging.DEBUG)
+        self.follow_redirects = follow_redirects
 
         self.visited_urls: Set[URLNode] = set()
         self.found_urls: Set[URLNode] = set()  # newly found urls
@@ -236,7 +238,8 @@ class Crawler:
         if len(url_children) > 0:
             self.url_dict[url_node] = set()
         elif is_html and (
-            url_node not in self.url_dict.keys() or self.url_dict[url_node] is None):
+            url_node not in self.url_dict.keys() or self.url_dict[url_node] is None
+        ):
             self.url_dict[url_node] = set()
 
         for child in url_children:
@@ -264,7 +267,7 @@ class Crawler:
         try:
             response = await self.client.get(
                 url,
-                allow_redirects=False,
+                allow_redirects=self.follow_redirects,
                 headers=self.headers,
                 proxy=self.proxy,
                 verify_ssl=False,

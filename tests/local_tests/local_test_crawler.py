@@ -7,8 +7,11 @@ import aiohttp
 import pytest
 
 from secretscraper.crawler import Crawler
-from secretscraper.filter import (ChainedURLFilter, DomainBlackListURLFilter,
-                                  DomainWhiteListURLFilter)
+from secretscraper.filter import (
+    ChainedURLFilter,
+    DomainBlackListURLFilter,
+    DomainWhiteListURLFilter,
+)
 from secretscraper.handler import HyperscanRegexHandler
 from secretscraper.output_formatter import Formatter
 from secretscraper.urlparser import URLParser
@@ -64,7 +67,7 @@ def test_crawler_scrapeme(regex_dict):
         proxy="socks://127.0.0.1:7890",
         verbose=False,
         timeout=10,
-        debug=False
+        debug=False,
     )
     formatter = Formatter()
     crawler.start()

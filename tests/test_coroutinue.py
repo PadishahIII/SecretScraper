@@ -10,8 +10,12 @@ import unittest
 import aiohttp
 import pytest
 
-from secretscraper.coroutinue import (AsyncPool, AsyncPoolCollector, AsyncTask,
-                                      AsyncWorker)
+from secretscraper.coroutinue import (
+    AsyncPool,
+    AsyncPoolCollector,
+    AsyncTask,
+    AsyncWorker,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -59,9 +63,7 @@ class TestCoroutineAsyncWorker:
 
     @pytest.mark.asyncio
     async def test_coroutine_async_task_aiohttp(self):
-        task = AsyncTask(
-            aiohttp_request, "https://www.baidu.com"
-        )
+        task = AsyncTask(aiohttp_request, "https://www.baidu.com")
         start = time.perf_counter()
         ret = await task.func(*task.args, **task.kwargs)
         end = time.perf_counter()

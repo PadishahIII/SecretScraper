@@ -24,6 +24,8 @@ class CrawlerException(SecretScraperException):
 
     pass
 
+
 class FacadeException(SecretScraperException):
     """Exception raised by facade classes"""
+
     pass

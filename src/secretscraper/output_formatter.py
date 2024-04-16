@@ -1,4 +1,5 @@
 """Output the crawl result to file or terminal"""
+
 import pathlib
 import sys
 import typing
@@ -12,8 +13,10 @@ from .util import Range
 class Formatter:
     """Colorful output for terminal and non-colorful output for out-file"""
 
-    def __init__(self, allowed_status: list[Range] = None,
-                 ) -> None:
+    def __init__(
+        self,
+        allowed_status: list[Range] = None,
+    ) -> None:
         """
 
         :param allowed_status: filter response status. None for display all
@@ -56,7 +59,9 @@ class Formatter:
                 return False
         return True
 
-    def output_found_domains(self, found_urls: typing.Iterable[URLNode], is_print: bool = False) -> str:
+    def output_found_domains(
+        self, found_urls: typing.Iterable[URLNode], is_print: bool = False
+    ) -> str:
         """Output the found domains"""
         if not is_print:
             urls = {str(url.url_object.netloc) for url in found_urls}
@@ -73,46 +78,67 @@ class Formatter:
             return result
 
     def output_url_hierarchy(
-        self, url_dict: dict[URLNode, typing.Iterable[URLNode]],
-        is_print: bool = False
+        self, url_dict: dict[URLNode, typing.Iterable[URLNode]], is_print: bool = False
     ) -> str:
         """Output the url hierarchy"""
         if not is_print:
             url_hierarchy = ""
             for base, urls in url_dict.items():
-                url_set = {f"{str(url.url)} [{str(url.response_status)}]" for url in urls if self.filter(url)}
+                url_set = {
+                    f"{str(url.url)} [{str(url.response_status)}]"
+                    for url in urls
+                    if self.filter(url)
+                }
                 urls_str = "\n".join(url_set)
                 url_hierarchy += f"\n{len(url_set)} URLs from {base.url} [{str(base.response_status)}] (depth:{base.depth}):\n{urls_str}\n"
             return url_hierarchy
         else:
             url_hierarchy = ""
             for base, urls in url_dict.items():
-                url_set = {self.format_normal_result(f"{str(url.url)}") + " [" + self.format_colorful_status(
-                    url.response_status) + "]" for url in
-                           urls if self.filter(url)}
+                url_set = {
+                    self.format_normal_result(f"{str(url.url)}")
+                    + " ["
+                    + self.format_colorful_status(url.response_status)
+                    + "]"
+                    for url in urls
+                    if self.filter(url)
+                }
                 urls_str = "\n".join(url_set)
                 url_hierarchy += f"\n{len(url_set)} URLs from {base.url} [{str(base.response_status)}] (depth:{base.depth}):\n{urls_str}"
-                click.echo(f"\n{len(url_set)} URLs from {base.url} [" +
-                           self.format_colorful_status(base.response_status) +
-                           f"] (depth:{base.depth}):\n{urls_str}"
-                           )
+                click.echo(
+                    f"\n{len(url_set)} URLs from {base.url} ["
+                    + self.format_colorful_status(base.response_status)
+                    + f"] (depth:{base.depth}):\n{urls_str}"
+                )
 
             return url_hierarchy
 
-    def output_js(self, js_dict: dict[URLNode, typing.Iterable[URLNode]], is_print: bool = False) -> str:
+    def output_js(
+        self, js_dict: dict[URLNode, typing.Iterable[URLNode]], is_print: bool = False
+    ) -> str:
         """Output the url hierarchy"""
         if is_print:
             js_str = ""
             for base, urls in js_dict.items():
-                url_set = {f"{str(url.url)} [{str(url.response_status)}]" for url in urls if self.filter(url)}
+                url_set = {
+                    f"{str(url.url)} [{str(url.response_status)}]"
+                    for url in urls
+                    if self.filter(url)
+                }
                 urls_str = "\n".join(url_set)
                 js_str += f"\n{len(url_set)} JS from {base.url}:\n{urls_str}\n"
             return js_str
         else:
             js_str = ""
             for base, urls in js_dict.items():
-                url_set = {self.format_normal_result(f"{str(url.url)}") + " [" + self.format_colorful_status(
-                    url.response_status) + "] " for url in urls if self.filter(url)}
+                url_set = {
+                    self.format_normal_result(f"{str(url.url)}")
+                    + " ["
+                    + self.format_colorful_status(url.response_status)
+                    + "] "
+                    for url in urls
+                    if self.filter(url)
+                }
                 urls_str = "\n".join(url_set)
                 js_str += f"\n{len(url_set)} JS from {base.url}:\n{urls_str}\n"
             return js_str

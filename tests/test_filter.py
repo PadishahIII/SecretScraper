@@ -1,8 +1,11 @@
 from typing import Set
 from urllib.parse import urlparse
 
-from secretscraper.filter import (ChainedURLFilter, DomainBlackListURLFilter,
-                                  DomainWhiteListURLFilter)
+from secretscraper.filter import (
+    ChainedURLFilter,
+    DomainBlackListURLFilter,
+    DomainWhiteListURLFilter,
+)
 
 
 def test_domain_white_list_urlfilter():
