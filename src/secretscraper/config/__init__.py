@@ -6,6 +6,7 @@ import os
 import sys
 from pathlib import Path
 
+import dynaconf
 from dynaconf import Dynaconf  # type: ignore
 
 _base_dir = Path(__file__).parent.parent
