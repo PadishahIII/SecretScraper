@@ -201,6 +201,7 @@ def test_crawler_facade_update_crawler(
     ["invoke_args"],
     [(["-u", "https://www.baidu.com/", "-x", "http://127.0.0.1:8080","--max-page=100"],)],
     # secretscraper -u https://meeting.nawaa.com:4433/zh-CN/home -H  -x http://127.0.0.1:8080
+    # secretscraper -u http://127.0.0.1:8888
 
 )
 def test_normal_run(clicker: CliRunner, invoke_args: list[str]):

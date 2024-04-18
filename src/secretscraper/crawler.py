@@ -13,13 +13,13 @@ import aiohttp
 import dynaconf
 import httpx
 from aiohttp import ClientResponse
+from httpx import AsyncClient
 
 from secretscraper.coroutinue import AsyncPoolCollector, AsyncTask
 from secretscraper.entity import URL, Secret, URLNode
 from secretscraper.filter import URLFilter
 from secretscraper.handler import Handler
 from secretscraper.urlparser import URLParser
-from httpx import AsyncClient
 
 from .config import settings
 from .exception import CrawlerException

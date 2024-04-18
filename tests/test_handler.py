@@ -7,15 +7,13 @@ from bs4 import BeautifulSoup
 
 from secretscraper.entity import Secret
 from secretscraper.exception import HandlerException
-from secretscraper.handler import (
-    BSHandler,
-    BSResult,
-    HyperscanRegexHandler,
-    ReRegexHandler,
-)
-# from tests import duration
+from secretscraper.handler import (BSHandler, BSResult, HyperscanRegexHandler,
+                                   ReRegexHandler)
 
 from . import settings
+
+# from tests import duration
+
 
 logger = logging.getLogger(__name__)
 

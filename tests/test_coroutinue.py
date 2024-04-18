@@ -10,12 +10,8 @@ import unittest
 import aiohttp
 import pytest
 
-from secretscraper.coroutinue import (
-    AsyncPool,
-    AsyncPoolCollector,
-    AsyncTask,
-    AsyncWorker,
-)
+from secretscraper.coroutinue import (AsyncPool, AsyncPoolCollector, AsyncTask,
+                                      AsyncWorker)
 
 logger = logging.getLogger(__name__)
 

@@ -7,11 +7,8 @@ import aiohttp
 import pytest
 
 from secretscraper.crawler import Crawler
-from secretscraper.filter import (
-    ChainedURLFilter,
-    DomainBlackListURLFilter,
-    DomainWhiteListURLFilter,
-)
+from secretscraper.filter import (ChainedURLFilter, DomainBlackListURLFilter,
+                                  DomainWhiteListURLFilter)
 from secretscraper.handler import HyperscanRegexHandler
 from secretscraper.output_formatter import Formatter
 from secretscraper.urlparser import URLParser

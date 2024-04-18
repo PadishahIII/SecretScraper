@@ -13,7 +13,8 @@ import dynaconf
 
 from .crawler import Crawler
 from .exception import FacadeException
-from .filter import ChainedURLFilter, DomainBlackListURLFilter, DomainWhiteListURLFilter
+from .filter import (ChainedURLFilter, DomainBlackListURLFilter,
+                     DomainWhiteListURLFilter)
 from .handler import HyperscanRegexHandler
 from .output_formatter import Formatter
 from .urlparser import URLParser
