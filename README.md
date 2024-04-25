@@ -194,3 +194,9 @@ rules:
     loaded: true
 
 ```
+
+---
+
+# TODO
+- [ ] Scan local file
+- [ ] Support windows
