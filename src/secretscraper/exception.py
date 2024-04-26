@@ -29,3 +29,7 @@ class FacadeException(SecretScraperException):
     """Exception raised by facade classes"""
 
     pass
+
+class FileScannerException(SecretScraperException):
+    """Exception raised by file scanner"""
+    pass

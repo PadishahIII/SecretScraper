@@ -4,6 +4,7 @@ import copy
 import functools
 import logging
 import pathlib
+import traceback
 import typing
 import warnings
 from collections import namedtuple
@@ -12,17 +13,41 @@ import click
 import dynaconf
 
 from .crawler import Crawler
-from .exception import FacadeException
+from .exception import FacadeException, FileScannerException
 from .filter import (ChainedURLFilter, DomainBlackListURLFilter,
                      DomainWhiteListURLFilter)
 from .handler import HyperscanRegexHandler
 from .output_formatter import Formatter
+from .scanner import FileScanner
 from .urlparser import URLParser
 from .util import Range, read_rules_from_setting
 
 logger = logging.getLogger(__name__)
 
 warnings.filterwarnings("ignore")  # ignore all warnings
+
+
+def print_func(f: typing.IO, func: typing.Callable, content: str, **kwargs) -> None:
+    func(content, **kwargs)
+    func(content, file=f, **kwargs)
+
+
+def print_func_colorful(
+    f: typing.IO,
+    func: typing.Callable,
+    content: str,
+    fg: str = None,
+    bg: str = None,
+    blink=False,
+    bold=False,
+):
+    print_func(f,
+               func,
+               click.style(content, fg=fg, bg=bg, blink=blink, bold=bold)
+               )
+
+
+print_config = functools.partial(click.secho, fg="bright_black", bold=True)
 
 
 class CrawlerFacade:
@@ -55,39 +80,25 @@ class CrawlerFacade:
         with self.outfile.open("w") as f:
             try:
 
-                def print_func(content: str, **kwargs) -> None:
-                    self.print_func(content, **kwargs)
-                    self.print_func(content, file=f, **kwargs)
-
-                def print_func_colorful(
-                    content: str,
-                    fg: str = None,
-                    bg: str = None,
-                    blink=False,
-                    bold=False,
-                ):
-                    print_func(
-                        click.style(content, fg=fg, bg=bg, blink=blink, bold=bold)
-                    )
-
                 # print_func(f"Starting crawler...")
-                print_func_colorful(
-                    f"Target URLs: {', '.join(self.crawler.start_urls)}",
-                    bold=True,
-                    blink=True,
-                )
+                print_func_colorful(f,
+                                    self.print_func,
+                                    f"Target URLs: {', '.join(self.crawler.start_urls)}",
+                                    bold=True,
+                                    blink=True,
+                                    )
                 self.crawler.start()
 
-                # print_func_colorful(f"Total page: {self.crawler.total_page}")
+                # print_func_colorful(self.print_func,f"Total page: {self.crawler.total_page}")
                 self.formatter.output_url_hierarchy(self.crawler.url_dict, True)
 
                 self.formatter.output_found_domains(list(self.crawler.found_urls), True)
 
                 if not self.hide_regex:
-                    print_func_colorful(
-                        f"{self.formatter.output_secrets(self.crawler.url_secrets)}"
-                    )
-                print_func_colorful(f"{self.formatter.output_js(self.crawler.js_dict)}")
+                    print_func_colorful(self.print_func,
+                                        f"{self.formatter.output_secrets(self.crawler.url_secrets)}"
+                                        )
+                print_func_colorful(self.print_func, f"{self.formatter.output_js(self.crawler.js_dict)}")
             except KeyboardInterrupt:
                 self.print_func("\nExiting...")
                 self.crawler.close_all()
@@ -98,7 +109,6 @@ class CrawlerFacade:
 
     def create_crawler(self) -> Crawler:
         """Create a Crawler"""
-        print_config = functools.partial(click.secho, fg="bright_black", bold=True)
         # Follow redirects
         if self.custom_settings.get("follow_redirects", False) is True:
             self.settings["follow_redirects"] = True
@@ -235,3 +245,79 @@ class CrawlerFacade:
             follow_redirects=self.settings["follow_redirects"],
         )
         return crawler
+
+
+class FileScannerFacade:
+    """Facade for local file scanner"""
+
+    def __init__(
+        self,
+        full_settings: dynaconf.Dynaconf,
+        custom_settings: dict,
+        print_func: typing.Callable[[str], ...] = print,
+    ):
+        self.settings = full_settings
+        self.custom_settings = custom_settings
+        self.print_func = print_func
+        self.outfile = pathlib.Path(__file__).parent / "scanner.log"
+
+        self.formatter = Formatter()
+        self.scanner = self.init()
+
+    def start(self):
+        """Start file scanner"""
+        with open(self.outfile, "w") as f:
+            try:
+                print_func_colorful(f, self.print_func, f"Targets: {len(self.scanner.targets)}", bold=True)
+                self.scanner.start()
+
+                result = self.formatter.output_local_scan_secrets(self.scanner.secrets)
+                f.write(result)
+
+            except FileScannerException as e:
+                print_func_colorful(f, self.print_func,
+                                    f"Exception while scanning file: {e}\nTraceback: {traceback.format_exc()}",
+                                    fg="red")
+            except KeyboardInterrupt:
+                print_func_colorful(f, self.print_func, f"\nExiting")
+            except Exception as e:
+                print_func_colorful(f, self.print_func,
+                                    f"Unexpected error: {e}.\nTraceback: {traceback.format_exc()}\n Exiting...")
+
+    def init(self) -> FileScanner:
+        """Initialize options"""
+        # Verbose
+        verbose: typing.Optional[bool] = self.custom_settings.get("verbose", None)
+        if verbose is not None:
+            self.settings["verbose"] = verbose
+
+        # Outfile
+        outfile: typing.Optional[pathlib.Path] = self.custom_settings.get(
+            "outfile", None
+        )
+        if outfile is not None:
+            self.outfile = outfile
+        print_config(f"Output file: {self.outfile}")
+
+        # Read rules from config file
+        rules: dict[str, str] = read_rules_from_setting(self.settings)
+        handler = HyperscanRegexHandler(rules)
+
+        # Get all files from directory
+        base: typing.Optional[pathlib.Path] = self.custom_settings.get('local', None)
+        if base is None:
+            raise FacadeException(f"Internal error: No base directory")
+        targets: list[pathlib.Path] = list()
+        if base.is_file():
+            targets.append(base)
+        else:
+            for path in base.rglob("*"):
+                if path.is_file():
+                    targets.append(path)
+
+        # Create file scanner
+        file_scanner = FileScanner(
+            targets=targets,
+            handler=handler
+        )
+        return file_scanner

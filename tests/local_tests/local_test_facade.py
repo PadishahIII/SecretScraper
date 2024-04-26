@@ -199,12 +199,32 @@ def test_crawler_facade_update_crawler(
 
 @pytest.mark.parametrize(
     ["invoke_args"],
-    [(["-u", "https://www.baidu.com/", "-x", "http://127.0.0.1:8080","--max-page=100"],)],
+    [(["-u", "https://www.baidu.com/", "-x", "http://127.0.0.1:8080", "--max-page=100"],)],
     # secretscraper -u https://meeting.nawaa.com:4433/zh-CN/home -H  -x http://127.0.0.1:8080
     # secretscraper -u http://127.0.0.1:8888
 
 )
 def test_normal_run(clicker: CliRunner, invoke_args: list[str]):
+    result = clicker.invoke(main, invoke_args)
+    if result.exception is not None:
+        logger.exception(result.exception)
+        raise result.exception
+    logger.info(result.output)
+    logger.info(result)
+
+
+@pytest.mark.parametrize(
+    ["invoke_args"],
+    [
+        (["--local", "local_scan"],),
+        (["--local", "local_scan/empty_dir"],),
+        (["--local", "local_scan/source_text.txt"],),
+
+     ],
+
+)
+def test_local_scan(clicker: CliRunner, invoke_args: list[str]):
+    """Test local file scanner"""
     result = clicker.invoke(main, invoke_args)
     if result.exception is not None:
         logger.exception(result.exception)

@@ -11,7 +11,7 @@ from dynaconf.base import Settings
 from secretscraper import __version__
 from secretscraper.config import settings
 from secretscraper.exception import FacadeException
-from secretscraper.facade import CrawlerFacade
+from secretscraper.facade import CrawlerFacade, FileScannerFacade
 from secretscraper.handler import HyperscanRegexHandler
 from secretscraper.log import init_log
 
@@ -100,6 +100,8 @@ facade_obj = None
 @click.option("-H", "--hide-regex", help="Hide regex search result", is_flag=True)
 @click.option("-F", "--follow-redirects", help="Follow redirects", is_flag=True, default=False)
 @click.option("-u", "--url", help="Target url", type=click.STRING)
+@click.option("-l", "--local", help="Local file or directory, scan local file/directory recursively ",
+              type=click.Path(exists=True, file_okay=True, dir_okay=True, path_type=pathlib.Path))
 def main(**options):
     """Main commands"""
     if options["version"]:
@@ -122,7 +124,10 @@ def main(**options):
         global facade_settings, facade_obj
         print_func = functools.partial(click.echo, color=True)
         init_log()
-        facade = CrawlerFacade(settings, options_dict, print_func=print_func)
+        if options['local'] is not None:
+            facade = FileScannerFacade(settings, options_dict, print_func)
+        else:
+            facade = CrawlerFacade(settings, options_dict, print_func=print_func)
         facade_obj = facade
         facade_settings = facade.settings
     except FacadeException as e:

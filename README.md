@@ -118,6 +118,8 @@ Options:
   -H, --hide-regex             Hide regex search result
   -F, --follow-redirects       Follow redirects
   -u, --url TEXT               Target url
+  -l, --local PATH             Local file or directory, scan local
+                               file/directory recursively
   --help                       Show this message and exit.
 ```
 
@@ -142,6 +144,12 @@ Use `-H` option to hide regex-matching results. Only found links will be display
 ```bash
 secretscraper -u https://scrapeme.live/shop/ -H
 ```
+
+#### Extract secrets from local file
+```bash
+secretscraper -l <dir or file>
+```
+
 #### Customize Configuration
 The built-in config is shown as below. You can assign custom configuration via `-i settings.yml`.
 ```yaml
@@ -198,5 +206,7 @@ rules:
 ---
 
 # TODO
-- [ ] Scan local file
+- [x] Scan local file
 - [ ] Support windows
+- [ ] Support headless browser
+- [ ] Extract links additionally via regex

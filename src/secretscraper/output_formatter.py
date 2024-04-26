@@ -162,3 +162,20 @@ class Formatter:
                 secrets_str = "\n".join(secret_set)
                 url_secrets_str += f"\n{len(secret_set)} Secrets found in {url.url} {str(url.response_status)}:\n{secrets_str}\n"
         return url_secrets_str
+
+    def output_local_scan_secrets(self, path_secrets: dict[pathlib.Path, typing.Iterable[Secret]]) -> str:
+        """Display all secrets found in local file"""
+        if len(path_secrets) == 0:
+            click.echo("No secrets found.\n")
+        result = ""
+        for path, secrets in path_secrets.items():
+            if secrets is not None and len(list(secrets)) > 0:
+                secret_set = {
+                    f"{str(secret.type)}: {str(secret.data)}" for secret in secrets
+                }
+                secrets_str = "\n".join(secret_set)
+                s = click.style(f"\n{len(secret_set)} Secrets found in {str(path)}:", fg="cyan") + \
+                    f"\n{secrets_str}\n"
+                result += s
+                click.echo(s)
+        return result
