@@ -93,12 +93,13 @@ facade_obj = None
 @click.option(
     "-x",
     "--proxy",
-    help="Set proxy, e.g. http://127.0.0.1:8080, http://127.0.0.1:7890",
+    help="Set proxy, e.g. http://127.0.0.1:8080, socks://127.0.0.1:7890",
     type=click.STRING,
 )
 @click.option("-H", "--hide-regex", help="Hide regex search result", is_flag=True)
 @click.option("-F", "--follow-redirects", help="Follow redirects", is_flag=True)
 @click.option("-u", "--url", help="Target url", type=click.STRING)
+@click.option("--detail", help="Show detailed result", is_flag=True)
 @click.option("-l", "--local", help="Local file or directory, scan local file/directory recursively ",
               type=click.Path(exists=True, file_okay=True, dir_okay=True, path_type=pathlib.Path))
 def main(**options):

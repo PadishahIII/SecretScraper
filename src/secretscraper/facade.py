@@ -7,6 +7,7 @@ import pathlib
 import traceback
 import typing
 import warnings
+from urllib.parse import urlparse
 from collections import namedtuple
 
 import click
@@ -20,7 +21,7 @@ from .handler import get_regex_handler
 from .output_formatter import Formatter
 from .scanner import FileScanner
 from .urlparser import URLParser, RegexURLParser
-from .util import Range, read_rules_from_setting
+from .util import Range, read_rules_from_setting, to_host_port
 
 logger = logging.getLogger(__name__)
 
@@ -73,6 +74,7 @@ class CrawlerFacade:
         self.print_func = print_func
         self.debug: bool = False
         self.follow_redirects: bool = False
+        self.detail_output: bool = False
         self.crawler: Crawler = self.create_crawler()
 
     def start(self):
@@ -88,17 +90,38 @@ class CrawlerFacade:
                                     blink=True,
                                     )
                 self.crawler.start()
+                if self.detail_output:
+                    # print_func_colorful(self.print_func,f"Total page: {self.crawler.total_page}")
+                    self.formatter.output_url_hierarchy(self.crawler.url_dict, True)
 
-                # print_func_colorful(self.print_func,f"Total page: {self.crawler.total_page}")
-                self.formatter.output_url_hierarchy(self.crawler.url_dict, True)
-
-                self.formatter.output_found_domains(list(self.crawler.found_urls), True)
-
-                if not self.hide_regex:
-                    print_func_colorful(f, self.print_func,
-                                        f"{self.formatter.output_secrets(self.crawler.url_secrets)}"
-                                        )
-                print_func_colorful(f, self.print_func, f"{self.formatter.output_js(self.crawler.js_dict)}")
+                    if not self.hide_regex:
+                        print_func_colorful(f, self.print_func,
+                                            f"{self.formatter.output_secrets(self.crawler.url_secrets)}"
+                                            )
+                    print_func_colorful(f, self.print_func, f"{self.formatter.output_js(self.crawler.js_dict)}")
+                    self.formatter.output_found_domains(list(self.crawler.found_urls), True)
+                else:
+                    # tidy output
+                    # URLs per domain
+                    domains = set()
+                    for url in self.crawler.start_urls:
+                        try:
+                            obj = urlparse(url)
+                            domain, _ = to_host_port(obj.netloc)
+                            if len(domain) > 0:
+                                domains.add(domain)
+                        except:
+                            pass
+                    self.formatter.output_url_per_domain(list(domains), self.crawler.url_dict)
+                    # JS per domain
+                    self.formatter.output_url_per_domain(list(domains), self.crawler.js_dict, "JS")
+                    # Domains
+                    self.formatter.output_found_domains(list(self.crawler.found_urls), True)
+                    # Secrets
+                    if not self.hide_regex:
+                        print_func_colorful(f, self.print_func,
+                                            f"{self.formatter.output_secrets(self.crawler.url_secrets)}"
+                                            )
             except KeyboardInterrupt:
                 self.print_func("\nExiting...")
                 self.crawler.close_all()
@@ -238,6 +261,10 @@ class CrawlerFacade:
         rules.extend(self.settings.get("jsFind"))
         rules_dict = {f"urlFinder_{i}": rule for i, rule in enumerate(rules)}
         parser = RegexURLParser(get_regex_handler(rules_dict))
+
+        # Detailed output
+        if self.custom_settings.get("detail", False) is True:
+            self.detail_output = True
 
         crawler = Crawler(
             start_urls=list(start_urls),

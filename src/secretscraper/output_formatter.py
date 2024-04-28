@@ -7,7 +7,7 @@ import typing
 import click
 
 from .entity import URL, Secret, URLNode
-from .util import Range
+from .util import Range, to_host_port
 
 
 class Formatter:
@@ -69,12 +69,12 @@ class Formatter:
         if not is_print:
             urls = {str(url.url_object.netloc) for url in found_urls}
             found_urls_str = "\n".join(urls)
-            result = f"{len(urls)} Domains:\n{found_urls_str}\n"
+            result = f"\n{len(urls)} Domains:\n{found_urls_str}\n"
             return result
         else:
             urls = {str(url.url_object.netloc) for url in found_urls}
             found_urls_str = "\n".join(urls)
-            result = f"{len(urls)} Domains:\n{found_urls_str}\n"
+            result = f"\n{len(urls)} Domains:\n{found_urls_str}\n"
             click.echo(f"{len(urls)} Domains:")
             click.echo(self.format_normal_result(f"{found_urls_str}"))
             click.echo("")
@@ -115,6 +115,36 @@ class Formatter:
                 )
 
             return url_hierarchy
+
+    def output_url_per_domain(
+        self, domains: list[str], url_dict: dict[URLNode, typing.Iterable[URLNode]], url_type:str = "URL"
+    ) -> str:
+        """Output the URLs for differenct domains"""
+        url_hierarchy = ""
+        domain_secrets: dict[str, list[URLNode]] = dict()
+        for base, urls in url_dict.items():
+            domain, _ = to_host_port(base.url_object.netloc)
+            if domain not in domains:
+                domain = "Other"
+            if domain not in domain_secrets:
+                domain_secrets[domain] = list()
+            domain_secrets[domain].extend(list(urls))
+        for domain, urls in domain_secrets.items():
+            if urls is None or len(urls) == 0:
+                continue
+            url_set = {
+                self.format_normal_result(f"{str(url.url)}")
+                + " ["
+                + self.format_colorful_status(url.response_status)
+                + "]"
+                for url in urls
+                if self.filter(url)
+            }
+            urls_str = "\n".join(url_set)
+            url_hierarchy += f"\n{len(url_set)} {url_type} from {domain}:\n{urls_str}"
+            click.echo(url_hierarchy)
+
+        return url_hierarchy
 
     def output_js(
         self, js_dict: dict[URLNode, typing.Iterable[URLNode]], is_print: bool = False

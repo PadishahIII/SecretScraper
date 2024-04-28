@@ -33,7 +33,7 @@ def read_rules_from_setting(settings: LazySettings) -> dict[str, str]:
 
 def is_static_resource(path: str) -> bool:
     """Check whether a path is a static resource"""
-    exts = ['.png', '.jpg', '.jpeg', '.gif', '.css', '.ico']
+    exts = ['.png', '.jpg', '.jpeg', '.gif', '.css', '.ico', ".dtd"]
     for ext in exts:
         if path.endswith(ext):
             return True

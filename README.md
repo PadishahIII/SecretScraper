@@ -207,9 +207,9 @@ rules:
 
 # TODO
 - [ ] Support headless browser
-- [ ] Support url-finder output format, add `--tree` option
 - [ ] Add regex doc reference
 - [ ] Generate configuration file
+- [x] Support url-finder output format, add `--detail` option
 - [x] Support windows
 - [x] Scan local file
 - [x] Extract links via regex

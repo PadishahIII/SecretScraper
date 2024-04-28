@@ -1,3 +1,6 @@
+# 2024.4.28
+- Prettify output, add `--detail` option
+
 # 2024.4.26
 - **New Features**
   - [x] Support to scan local files
