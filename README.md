@@ -8,6 +8,8 @@ SecretScraper is a highly configurable web scrape tool that crawl links  from ta
 data via regular expression.
 
 
+ <img alt="Shows an illustrated sun in light mode and a moon with stars in dark mode." src="https://github.com/PadishahIII/SecretScraper/assets/83501709/d1aa763f-5711-47c4-8b8f-9309bac88ae2" width=800>
+
 ## Feature
 - Web crawler: extract links via both DOM hierarchy and regex
 - Support domain white list and black list
@@ -50,42 +52,11 @@ http://scrapeme.live/3
 http://scrapeme.live/4
 http://scrapeme.live/1
 ```
-A sample output:
+Sample output:
 <img width="1125" alt="image" src="https://github.com/PadishahIII/SecretScraper/assets/83501709/00dd2053-7b9a-4ef3-a2b2-8c168e8ec0ee">
 
-```text
-> secretscraper -u http://127.0.0.1:8888
-Target urls num: 1
-Max depth: 1, Max page num: 1000
-Output file: /Users/padishah/Documents/Files/Python_WorkSpace/secretscraper/src/secretscraper/crawler.log
-Target URLs: http://127.0.0.1:8888
+<img width="990" alt="image" src="https://github.com/PadishahIII/SecretScraper/assets/83501709/fa733a3f-8a8a-4d79-814f-a4c115d1e056">
 
-1 URLs from http://127.0.0.1:8888 [200] (depth:0):
-http://127.0.0.1:8888/index.html [200]
-
-1 Domains:
-127.0.0.1:8888
-
-
-13 Secrets found in http://127.0.0.1:8888/1.js 200:
-Email: 3333333qqqxxxx@qq.com
-Shiro: =deleteme
-JS Map: xx/static/asdfaf.js.map
-Email: example@example.com
-Swagger: static/swagger-ui.html
-ID Card: 130528200011110000
-URL as a Value: redirect=http://
-Phone: 13273487666
-Internal IP:  192.168.1.1
-Cloud Key: Accesskeyid
-Cloud Key: AccessKeySecret
-Shiro: rememberme=
-Internal IP:  10.0.0.1
-
-
-1 JS from http://127.0.0.1:8888:
-http://127.0.0.1:8888/1.js [200]
-```
 
 All supported options:
 ```bash
