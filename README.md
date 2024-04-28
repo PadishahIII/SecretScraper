@@ -209,6 +209,7 @@ rules:
 - [ ] Support headless browser
 - [ ] Add regex doc reference
 - [ ] Generate configuration file
+- [x] Detect dangerous paths and avoid requesting them
 - [x] Support url-finder output format, add `--detail` option
 - [x] Support windows
 - [x] Scan local file
@@ -223,6 +224,7 @@ rules:
   - Optimize crawler
   - Prettify output, add `--detail` option
   - Generate default configuration to settings.yml
+  - Avoid requesting dangerous paths
 
 ## 2024.4.28 Version 1.3.2
 - **New Features**

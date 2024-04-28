@@ -266,6 +266,11 @@ class CrawlerFacade:
         if self.custom_settings.get("detail", False) is True:
             self.detail_output = True
 
+        # Dangerous paths
+        dangerous_paths: list[str] = list()
+        if self.settings.get("dangerousPath", None) is not None:
+            dangerous_paths.extend(set(self.settings("dangerousPath")))
+
         crawler = Crawler(
             start_urls=list(start_urls),
             url_filter=urlfilter,
@@ -281,6 +286,7 @@ class CrawlerFacade:
             timeout=self.settings.get("timeout"),
             debug=self.debug,
             follow_redirects=self.settings["follow_redirects"],
+            dangerous_paths = dangerous_paths
         )
         return crawler
 

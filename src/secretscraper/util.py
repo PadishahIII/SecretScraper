@@ -6,6 +6,7 @@ from urllib.parse import urlparse
 
 from dynaconf import LazySettings
 
+from .entity import URL
 from .exception import SecretScraperException
 
 Range = namedtuple("Range", ["start", "end"])

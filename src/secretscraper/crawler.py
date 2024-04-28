@@ -3,6 +3,7 @@
 import asyncio
 import logging
 import queue
+import re
 import threading
 import traceback
 import typing
@@ -48,6 +49,7 @@ class Crawler:
         timeout: float = 5,
         debug: bool = False,
         follow_redirects: bool = False,
+        dangerous_paths: list[str] = None,
     ):
         """
 
@@ -63,7 +65,9 @@ class Crawler:
         :param proxy: http proxy
         :param verbose: whether to print exception detail
         :param timeout: timeout for aiohttp request
+        :param dangerous_paths: dangerous paths to evade
         """
+        self.dangerous_paths = dangerous_paths
         self.proxy = proxy
         self.start_urls = start_urls
         # self.client = client
@@ -169,9 +173,22 @@ class Crawler:
         finally:
             await self.clean()
 
+    def is_evade(self, url: URLNode) -> bool:
+        """Check whether url should be evaded"""
+        if self.dangerous_paths is not None:
+            path = url.url_object.path
+            if len(
+                [path for p in self.dangerous_paths if re.search(f"{p}$", path.strip(), re.IGNORECASE)]
+            ) > 0:
+                return True
+        return False
+
     async def process_one(self, url_node: URLNode):
         """Fetch, extract url children and execute handler on result"""
         if self.max_page_num > 0 and self.total_page >= self.max_page_num:
+            return
+        if self.is_evade(url_node):
+            logger.debug(f"Evading {url_node}")
             return
         logger.debug(f"Processing {url_node.url}")
         self.total_page += 1
@@ -301,7 +318,7 @@ class Crawler:
         except httpx.TimeoutException as e:
             logger.error(f"Timeout while fetching {url} ")
         except httpx.ReadError as e:
-            logger.debug(f"Read error for {url}: {e}") # trigger when keyboard interrupt
+            logger.debug(f"Read error for {url}: {e}")  # trigger when keyboard interrupt
         except KeyboardInterrupt:
             pass  # ignore
         except Exception as e:
