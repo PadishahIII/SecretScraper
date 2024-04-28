@@ -52,6 +52,8 @@ http://scrapeme.live/4
 http://scrapeme.live/1
 ```
 A sample output:
+<img width="1125" alt="image" src="https://github.com/PadishahIII/SecretScraper/assets/83501709/00dd2053-7b9a-4ef3-a2b2-8c168e8ec0ee">
+
 ```text
 > secretscraper -u http://127.0.0.1:8888
 Target urls num: 1
