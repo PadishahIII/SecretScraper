@@ -1,13 +1,14 @@
 import asyncio
 import concurrent.futures
 import logging
+import sys
 
 import pytest
 from bs4 import BeautifulSoup
 
 from secretscraper.entity import Secret
 from secretscraper.exception import HandlerException
-from secretscraper.handler import (BSHandler, BSResult, HyperscanRegexHandler,
+from secretscraper.handler import (BSHandler, BSResult,
                                    ReRegexHandler)
 
 from . import settings
@@ -28,6 +29,9 @@ def test_re_regex_handler(regex_dict, resource_text):
 
 
 def test_hyperscan_regex_handler(regex_dict, resource_text):
+    if sys.platform.startswith("win"):
+        return
+    from secretscraper.handler import HyperscanRegexHandler
     handler = HyperscanRegexHandler(rules=regex_dict, lazy_init=True)
     with pytest.raises(HandlerException):
         handler.handle("")
@@ -65,7 +69,6 @@ def test_bs_handler(html_text):
     res = "\n".join(list(map(lambda s: str(s), results)))
     # logger.info(f"Results: {res}")
     assert len(list(results)) == 1
-
 
 # def test_get_rules_from_settings():
 # settings.RULES[0].get("regex")

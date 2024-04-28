@@ -16,7 +16,7 @@ from .crawler import Crawler
 from .exception import FacadeException, FileScannerException
 from .filter import (ChainedURLFilter, DomainBlackListURLFilter,
                      DomainWhiteListURLFilter)
-from .handler import HyperscanRegexHandler, ReRegexHandler
+from .handler import get_regex_handler
 from .output_formatter import Formatter
 from .scanner import FileScanner
 from .urlparser import URLParser, RegexURLParser
@@ -231,13 +231,13 @@ class CrawlerFacade:
 
         # Read rules from config file
         rules: dict[str, str] = read_rules_from_setting(self.settings)
-        handler = HyperscanRegexHandler(rules)
+        handler = get_regex_handler(rules)
 
         # Read url/js regex
         rules: list[str] = self.settings.get("urlFind")
         rules.extend(self.settings.get("jsFind"))
         rules_dict = {f"urlFinder_{i}": rule for i, rule in enumerate(rules)}
-        parser = RegexURLParser(ReRegexHandler(rules_dict))
+        parser = RegexURLParser(get_regex_handler(rules_dict))
 
         crawler = Crawler(
             start_urls=list(start_urls),
@@ -312,7 +312,7 @@ class FileScannerFacade:
 
         # Read rules from config file
         rules: dict[str, str] = read_rules_from_setting(self.settings)
-        handler = HyperscanRegexHandler(rules)
+        handler = get_regex_handler(rules)
 
         # Get all files from directory
         base: typing.Optional[pathlib.Path] = self.custom_settings.get('local', None)

@@ -12,7 +12,6 @@ from secretscraper import __version__
 from secretscraper.config import settings
 from secretscraper.exception import FacadeException
 from secretscraper.facade import CrawlerFacade, FileScannerFacade
-from secretscraper.handler import HyperscanRegexHandler
 from secretscraper.log import init_log
 
 facade_settings = settings  # for unit test

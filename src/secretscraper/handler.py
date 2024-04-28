@@ -2,10 +2,10 @@
 
 import queue
 import re
+import sys
 import typing
 from typing import Protocol
 
-import hyperscan
 from bs4 import BeautifulSoup, NavigableString, Tag
 
 from secretscraper.entity import Secret
@@ -56,74 +56,79 @@ class ReRegexHandler(Handler):
         return result_list
 
 
-class HyperscanRegexHandler(Handler):
-    """Regex handler using `hyperscan` module"""
+if not sys.platform.startswith("win"):
+    # hyperscan does not support windows
+    import hyperscan
 
-    def __init__(
-        self, rules: dict[str, str], lazy_init: bool = False, hs_flag: int = 0
-    ):
-        """
 
-        :param rules: regex rules dictionary with keys indicating type and values indicating the regex
-        :param lazy_init: True for deferring the initialization to actively call the init() method, otherwise initialize immediately
-        :param hs_flag: hyperscan flag perform to every expressions
-        """
-        # self.output_queue: queue.Queue[Secret] = queue.Queue()
-        self.rules = rules
-        self._init: bool = False
-        self._hs_flag: int = (
-            hs_flag | hyperscan.HS_FLAG_SOM_LEFTMOST | hyperscan.HS_FLAG_CASELESS
-        )
-        self._db: typing.Optional[hyperscan.Database] = None
-        self.patterns: dict[int, bytes] = dict()  # pattern id => regex in bytes
-        self.types: dict[int, str] = dict()  # pattern id => type
-        if not lazy_init:
-            self.init()
+    class HyperscanRegexHandler(Handler):
+        """Regex handler using `hyperscan` module"""
 
-    def init(self):
-        """Initialize the hyperscan database."""
-        self._db = hyperscan.Database()
-        flags: list[int] = [self._hs_flag for _ in range(len(self.rules))]
-        for index, type_str in enumerate(self.rules):
-            regex = self.rules.get(type_str)
-            self.patterns[index] = regex.encode("utf-8")
-            self.types[index] = type_str
+        def __init__(
+            self, rules: dict[str, str], lazy_init: bool = False, hs_flag: int = 0
+        ):
+            """
 
-        self._db.compile(
-            expressions=list(self.patterns.values()),
-            ids=list(self.patterns.keys()),
-            elements=len(self.patterns),
-            flags=flags,
-        )
+            :param rules: regex rules dictionary with keys indicating type and values indicating the regex
+            :param lazy_init: True for deferring the initialization to actively call the init() method, otherwise initialize immediately
+            :param hs_flag: hyperscan flag perform to every expressions
+            """
+            # self.output_queue: queue.Queue[Secret] = queue.Queue()
+            self.rules = rules
+            self._init: bool = False
+            self._hs_flag: int = (
+                hs_flag | hyperscan.HS_FLAG_SOM_LEFTMOST | hyperscan.HS_FLAG_CASELESS
+            )
+            self._db: typing.Optional[hyperscan.Database] = None
+            self.patterns: dict[int, bytes] = dict()  # pattern id => regex in bytes
+            self.types: dict[int, str] = dict()  # pattern id => type
+            if not lazy_init:
+                self.init()
 
-        self._init = True
+        def init(self):
+            """Initialize the hyperscan database."""
+            self._db = hyperscan.Database()
+            flags: list[int] = [self._hs_flag for _ in range(len(self.rules))]
+            for index, type_str in enumerate(self.rules):
+                regex = self.rules.get(type_str)
+                self.patterns[index] = regex.encode("utf-8")
+                self.types[index] = type_str
 
-    def handle(self, text: str) -> typing.Iterable[Secret]:
-        """Extract secret data via the pre-compiled hyperscan database
+            self._db.compile(
+                expressions=list(self.patterns.values()),
+                ids=list(self.patterns.keys()),
+                elements=len(self.patterns),
+                flags=flags,
+            )
 
-        This method is IO-bound.
-        """
-        if not self._init:
-            raise HandlerException("Hyperscan database is not initialized")
+            self._init = True
 
-        results: list[Secret] = list()
+        def handle(self, text: str) -> typing.Iterable[Secret]:
+            """Extract secret data via the pre-compiled hyperscan database
 
-        def on_match(
-            id: int,
-            froms: int,
-            to: int,
-            flags: int,
-            context: typing.Optional[typing.Any] = None,
-        ) -> typing.Optional[bool]:
-            match = text[froms:to]
-            type = self.types.get(id)
-            results.append(Secret(type, data=match))
-            return None
+            This method is IO-bound.
+            """
+            if not self._init:
+                raise HandlerException("Hyperscan database is not initialized")
 
-        self._db.scan(
-            text.encode("utf8"), match_event_handler=on_match
-        )  # block call until all regex operation finish
-        return results
+            results: list[Secret] = list()
+
+            def on_match(
+                id: int,
+                froms: int,
+                to: int,
+                flags: int,
+                context: typing.Optional[typing.Any] = None,
+            ) -> typing.Optional[bool]:
+                match = text[froms:to]
+                type = self.types.get(id)
+                results.append(Secret(type, data=match))
+                return None
+
+            self._db.scan(
+                text.encode("utf8"), match_event_handler=on_match
+            )  # block call until all regex operation finish
+            return results
 
 
 class BSHandler(Handler):
@@ -147,3 +152,11 @@ class BSHandler(Handler):
             secret = Secret(type="HTML Element", data=result)
             results.append(secret)
         return results
+
+
+def get_regex_handler(rules: dict[str, str], *args, **kwargs) -> Handler:
+    """Return regex handler on current platform"""
+    if sys.platform.startswith("win"):
+        return ReRegexHandler(rules, *args, **kwargs)
+    else:
+        return HyperscanRegexHandler(rules, *args, **kwargs)

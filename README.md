@@ -18,8 +18,8 @@ information via regular expression.
 - Flexible configuration in yaml format
 
 ## Prerequisite
-- Platform: MaxOS or Ubuntu, no support for Windows temporarily(due to [hyperscan](https://pypi.org/project/hyperscan/) is employed in this project).
-- Python Version: 3.11
+- Platform: Test on MaxOS, Ubuntu and Windows.
+- Python Version >= 3.11
 
 ## Usage
 
@@ -206,17 +206,20 @@ rules:
 ---
 
 # TODO
-- [ ] Support windows
 - [ ] Support headless browser
 - [ ] Support url-finder output format, add `--tree` option
 - [ ] Add regex doc reference
 - [ ] Generate configuration file
+- [x] Support windows
 - [x] Scan local file
 - [x] Extract links via regex
 
 ---
 
 # Change Log
+## 2024.4.28 Version 1.3.4
+- **New Features**
+  - Support windows
 ## 2024.4.28 Version 1.3.2
 - **New Features**
   - Extract links via regex
