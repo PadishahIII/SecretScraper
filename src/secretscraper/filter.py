@@ -4,6 +4,7 @@ import fnmatch
 from typing import List, Protocol, Set
 
 from secretscraper.entity import URL, URLNode
+from secretscraper.util import to_host_port
 
 
 class URLFilter(Protocol):
@@ -27,7 +28,7 @@ class DomainWhiteListURLFilter(URLFilter):
         - Case-insensitive
 
         """
-        domain: str = url.netloc
+        domain, _ = to_host_port(url.netloc)
         match: bool = False
         for pattern in self.white_list:
             if fnmatch.fnmatch(domain, pattern):
@@ -47,7 +48,7 @@ class DomainBlackListURLFilter(URLFilter):
 
         :return bool: True if url's domain is not in blacklist
         """
-        domain: str = url.netloc
+        domain, _ = to_host_port(url.netloc)
         match: bool = False
         for pattern in self.blacklist:
             if fnmatch.fnmatch(domain, pattern):

@@ -206,7 +206,25 @@ rules:
 ---
 
 # TODO
-- [x] Scan local file
 - [ ] Support windows
 - [ ] Support headless browser
-- [ ] Extract links additionally via regex
+- [ ] Support url-finder output format, add `--tree` option
+- [ ] Add regex doc reference
+- [ ] Generate configuration file
+- [x] Scan local file
+- [x] Extract links via regex
+
+---
+
+# Change Log
+## 2024.4.28 Version 1.3.2
+- **New Features**
+  - Extract links via regex
+
+## 2024.4.26 Version 1.3.1
+- **New Features**
+  - [x] Support scan local files
+
+## 2024.4.15
+- [x] Add status to url result
+- [x] All crawler test passed

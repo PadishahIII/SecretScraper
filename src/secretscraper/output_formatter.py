@@ -53,10 +53,13 @@ class Formatter:
         if self._allowed_status is None:
             return True
         for status_range in self._allowed_status:
-            if status_range.start <= url.response_status < status_range.end:
-                continue
-            else:
-                return False
+            try:
+                if status_range.start <= int(url.response_status) < status_range.end:
+                    continue
+                else:
+                    return False
+            except ValueError:
+                return False  # default discard
         return True
 
     def output_found_domains(

@@ -5,7 +5,9 @@ from urllib.parse import ParseResult, urlparse
 
 from bs4 import BeautifulSoup
 
-from .entity import URL, URLNode
+from .handler import Handler
+from .entity import URL, URLNode, Secret
+from .util import is_static_resource
 
 
 class URLParser:
@@ -26,14 +28,15 @@ class URLParser:
 
         for link in links_link:
             try:
-                href = str(link["rel"])
+                href = str(link["href"])
                 hrefs.add(href)
             except KeyError:
-                try:
-                    href = str(link["href"])
-                    hrefs.add(href)
-                except KeyError:
-                    pass
+                pass
+                # try:
+                #     href = str(link["href"])
+                #     hrefs.add(href)
+                # except KeyError:
+                #     pass
 
         for link in links_a:
             try:
@@ -45,13 +48,16 @@ class URLParser:
         for link in links_script:
             try:
                 href = str(link["src"])
-                hrefs.add(href)
+                if href.endswith(".js"):
+                    hrefs.add(href)
             except KeyError:
                 pass
 
         for href in hrefs:
             if href is not None:
                 url_obj = urlparse(href)
+                if is_static_resource(url_obj.path):
+                    continue
                 if (
                     len(url_obj.scheme) > 0
                     and url_obj.netloc is not None
@@ -82,4 +88,46 @@ class URLParser:
                         url_object=url_obj,
                     )
                     found_urls.add(node)
+        return found_urls
+
+
+class RegexURLParser(URLParser):
+    """Extract URLs via regex and HTML node"""
+
+    def __init__(self, handler: Handler):
+        self.handler: Handler = handler
+        super().__init__()
+
+    def extract_urls(self, base_url: URLNode, text: str) -> Set[URLNode]:
+        """Extract URLs via regex and HTML node"""
+        found_urls: Set[URLNode] = set()
+        current_depth = base_url.depth + 1
+
+        links: set[Secret] = set(self.handler.handle(text))
+        for link in links:
+            link = link.data
+            if len(link) == 0:
+                continue
+            obj = urlparse(link)
+            # ignore static resource
+            if is_static_resource(obj.path):
+                continue
+            url_obj = URL(
+                scheme=base_url.url_object.scheme if obj.scheme == "" or obj.scheme not in (
+                    "http", "https") else obj.scheme,
+                netloc=base_url.url_object.netloc if obj.netloc == "" else obj.netloc,
+                path=obj.path,
+                params=obj.params,
+                query=obj.query,
+                fragment=obj.fragment,
+            )
+            node = URLNode(
+                depth=current_depth,
+                parent=base_url,
+                url=url_obj.geturl(),
+                url_object=url_obj,
+            )
+            found_urls.add(node)
+
+        found_urls.update(super().extract_urls(base_url, text))
         return found_urls

@@ -112,7 +112,7 @@ def test_crawler_facade_update_settings(
                 (lambda crawler: crawler.max_page_num, 100),
                 (lambda crawler: crawler.proxy, "http://127.0.0.1:7890"),
                 (lambda crawler: len(crawler.start_urls), 1),
-                (lambda crawler: crawler.follow_redirects, False),
+                # (lambda crawler: crawler.follow_redirects, False), # settings is modified via other tests
             ],
         ),
         (
@@ -186,7 +186,7 @@ def test_crawler_facade_update_crawler(
         raise result.exception
     from secretscraper.cmdline import facade_obj, facade_settings
 
-    for validator in validators:
+    for i, validator in enumerate(validators):
         validator = Validator(*validator)
         try:
             assert True is validate_setting(
@@ -194,12 +194,14 @@ def test_crawler_facade_update_crawler(
             )
         except AssertionError as e:
             logger.error(f"Expected: {validator.expected_value}")
-            raise Exception(f"Excepted:xxx {validator.expected_value}")
+            raise Exception(f"Excepted: {validator.expected_value}, Got: {validator.get_attr_func(facade_obj.crawler)} index: {i}, Invoke-args: {invoke_args}")
 
 
 @pytest.mark.parametrize(
     ["invoke_args"],
-    [(["-u", "https://www.baidu.com/", "-x", "http://127.0.0.1:8080", "--max-page=100"],)],
+    # [(["-u", "https://www.baidu.com/", "-x", "http://127.0.0.1:8080", "--max-page=100"],)],
+    # [(["-u", "http://qyyx.dqwjj.cn:29200//IDCAS_dq"],)],
+    [(["-u", "http://127.0.0.1:8888", "-D", "127.0.0.1"],)],
     # secretscraper -u https://meeting.nawaa.com:4433/zh-CN/home -H  -x http://127.0.0.1:8080
     # secretscraper -u http://127.0.0.1:8888
 
@@ -220,7 +222,7 @@ def test_normal_run(clicker: CliRunner, invoke_args: list[str]):
         (["--local", "local_scan/empty_dir"],),
         (["--local", "local_scan/source_text.txt"],),
 
-     ],
+    ],
 
 )
 def test_local_scan(clicker: CliRunner, invoke_args: list[str]):

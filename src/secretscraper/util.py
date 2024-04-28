@@ -29,3 +29,22 @@ def read_rules_from_setting(settings: LazySettings) -> dict[str, str]:
             f"Exception occur when reading rules from setting: {e}"
         ) from e
     return rules_dict
+
+
+def is_static_resource(path: str) -> bool:
+    """Check whether a path is a static resource"""
+    exts = ['.png', '.jpg', '.jpeg', '.gif', '.css', '.ico']
+    for ext in exts:
+        if path.endswith(ext):
+            return True
+    return False
+
+
+def to_host_port(netloc: str) -> tuple[str, str]:
+    """Convert netloc to host and port"""
+    r = netloc.split(":")
+    if len(r) == 1:
+        return r[0], ""
+    if len(r) == 2:
+        return r[0].strip(), r[1].strip()
+    return '', ''

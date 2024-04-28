@@ -19,12 +19,12 @@ logger = logging.getLogger(__name__)
 
 
 # @duration
-# def test_re_regex_handler(regex_dict, resource_text):
-#     handler = ReRegexHandler(rules=regex_dict)
-#     secrets: list[Secret] = list(handler.handle(resource_text))
-#     # ensure all types of secrets are extracted at least once
-#     keys = set(map(lambda s: s.type, secrets))
-#     assert len(keys) == len(regex_dict)
+def test_re_regex_handler(regex_dict, resource_text):
+    handler = ReRegexHandler(rules=regex_dict)
+    secrets: list[Secret] = list(handler.handle(resource_text))
+    # ensure all types of secrets are extracted at least once
+    keys = set(map(lambda s: s.type, secrets))
+    assert len(keys) == len(regex_dict)
 
 
 def test_hyperscan_regex_handler(regex_dict, resource_text):

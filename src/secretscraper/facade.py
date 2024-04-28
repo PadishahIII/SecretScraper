@@ -16,10 +16,10 @@ from .crawler import Crawler
 from .exception import FacadeException, FileScannerException
 from .filter import (ChainedURLFilter, DomainBlackListURLFilter,
                      DomainWhiteListURLFilter)
-from .handler import HyperscanRegexHandler
+from .handler import HyperscanRegexHandler, ReRegexHandler
 from .output_formatter import Formatter
 from .scanner import FileScanner
-from .urlparser import URLParser
+from .urlparser import URLParser, RegexURLParser
 from .util import Range, read_rules_from_setting
 
 logger = logging.getLogger(__name__)
@@ -95,10 +95,10 @@ class CrawlerFacade:
                 self.formatter.output_found_domains(list(self.crawler.found_urls), True)
 
                 if not self.hide_regex:
-                    print_func_colorful(self.print_func,
+                    print_func_colorful(f, self.print_func,
                                         f"{self.formatter.output_secrets(self.crawler.url_secrets)}"
                                         )
-                print_func_colorful(self.print_func, f"{self.formatter.output_js(self.crawler.js_dict)}")
+                print_func_colorful(f, self.print_func, f"{self.formatter.output_js(self.crawler.js_dict)}")
             except KeyboardInterrupt:
                 self.print_func("\nExiting...")
                 self.crawler.close_all()
@@ -196,10 +196,14 @@ class CrawlerFacade:
                     max_status = status_ex.split("-")[1]
                     if min_status >= max_status:
                         raise FacadeException(f"Invalid status range: {status_ex}")
+                    if allowed_status is None:
+                        allowed_status = list()
                     allowed_status.append(
                         Range(start=int(min_status), end=int(max_status) + 1)
                     )
                 else:
+                    if allowed_status is None:
+                        allowed_status = list()
                     allowed_status.append(
                         Range(start=int(status_ex), end=int(status_ex) + 1)
                     )
@@ -229,10 +233,17 @@ class CrawlerFacade:
         rules: dict[str, str] = read_rules_from_setting(self.settings)
         handler = HyperscanRegexHandler(rules)
 
+        # Read url/js regex
+        rules: list[str] = self.settings.get("urlFind")
+        rules.extend(self.settings.get("jsFind"))
+        rules_dict = {f"urlFinder_{i}": rule for i, rule in enumerate(rules)}
+        parser = RegexURLParser(ReRegexHandler(rules_dict))
+
         crawler = Crawler(
             start_urls=list(start_urls),
             url_filter=urlfilter,
-            parser=URLParser(),
+            # parser=URLParser(),
+            parser=parser,
             handler=handler,
             max_page_num=self.settings.get("max_page_num"),
             max_depth=self.settings.get("max_depth"),

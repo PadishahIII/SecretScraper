@@ -23,29 +23,36 @@ class Handler(Protocol):
 
 
 class ReRegexHandler(Handler):
-    """(Deprecated) Regex handler using the `re` module, simple but have lowest performance."""
+    """ Regex handler using the `re` module, simple but have lowest performance."""
 
-    def __init__(self, rules: dict[str, str]):
+    def __init__(self, rules: dict[str, str], flags: int = 0):
         """
 
         :param rules: rules dictionary with keys indicating type and values indicating the regex
         """
         self.types = list(rules.keys())
         regexes = list(rules.values())
-        self.regexes: list = list()
+        self.regexes: list[re.Pattern] = list()
         for regex in regexes:
-            self.regexes.append(re.compile(regex))
+            self.regexes.append(re.compile(regex, flags=flags | re.IGNORECASE))
 
     def handle(self, text: str) -> typing.Iterable[Secret]:
         """Extract secret data"""
         result_list: list[Secret] = list()
         for index, regex in enumerate(self.regexes):
-            match = regex.search(text)
-            if match is not None:
-                secret_data = match.group(0)
-                secret_type = self.types[index]
-                secret = Secret(type=secret_type, data=secret_data)
-                result_list.append(secret)
+            # match = regex.search(text)
+            # if match is not None:
+            #     secret_data = match.group(0)
+            #     secret_type = self.types[index]
+            #     secret = Secret(type=secret_type, data=secret_data)
+            #     result_list.append(secret)
+            matches = regex.findall(text)
+            for match in matches:
+                if match is not None:
+                    secret_data = match if type(match) is not tuple else match[0]
+                    secret_type = self.types[index]
+                    secret = Secret(type=secret_type, data=secret_data)
+                    result_list.append(secret)
         return result_list
 
 
