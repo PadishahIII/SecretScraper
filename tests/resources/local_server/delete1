@@ -6,8 +6,6 @@
 <body>
 
 <h1 id="greeting">Hello World</h1>
-<link href="delete"/>
-<link href="normal"/>
 <link href="delete1"/>
 <script>
     // JavaScript code to change the text of the h1 element

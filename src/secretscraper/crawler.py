@@ -178,7 +178,7 @@ class Crawler:
         if self.dangerous_paths is not None:
             path = url.url_object.path
             if len(
-                [path for p in self.dangerous_paths if re.search(f"{p}$", path.strip(), re.IGNORECASE)]
+                [path for p in self.dangerous_paths if re.search(f"{p}", path.strip(), re.IGNORECASE)]
             ) > 0:
                 return True
         return False

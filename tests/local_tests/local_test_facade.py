@@ -205,12 +205,12 @@ def test_crawler_facade_update_crawler(
 
 @pytest.mark.parametrize(
     ["invoke_args"],
-    # [(["-u", "http://127.0.0.1:8888", "--detail", "--max-depth=0"],)],
+    [(["-u", "http://127.0.0.1:8888", "--max-depth=0"],)],
 
     # [(["-u", "https://www.baidu.com/", "-x", "http://127.0.0.1:8080", "--max-page=100"],)],
     # [(["-u", "http://qyyx.dqwjj.cn:29200//IDCAS_dq"],)],
     # [(["--version"],)],
-    [(["-u", "https://gthnb.zjzwfw.gov.cn ", "-x", "http://127.0.0.1:8080", "-H"],)],
+    # [(["-u", "https://gthnb.zjzwfw.gov.cn ", "-x", "http://127.0.0.1:8080", "-H"],)],
     # secretscraper -u https://meeting.nawaa.com:4433/zh-CN/home -H  -x http://127.0.0.1:8080
     # secretscraper -u http://127.0.0.1:8888
 

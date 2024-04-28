@@ -4,13 +4,12 @@
 
 ## Overview
 
-SecretScraper is a web scraper tool that can crawl through target websites, scrape from response and extract secret
-information via regular expression.
+SecretScraper is a highly configurable web scrape tool that crawl links  from target websites and scrape sensitive
+data via regular expression.
+
 
 ## Feature
-
-- Web crawler: scrape through target url and extract all extending urls, roll around through new links until depth or
-  page number exceeds the limitation
+- Web crawler: extract links via both DOM hierarchy and regex
 - Support domain white list and black list
 - Support multiple targets, input target URLs from a file
 - Scalable customization: header, proxy, timeout, cookie, scrape depth, follow redirect, etc.
@@ -116,13 +115,15 @@ Options:
   -s, --status TEXT            Filter response status to display, seperated by
                                commas, e.g. 200,300-400
   -x, --proxy TEXT             Set proxy, e.g. http://127.0.0.1:8080,
-                               http://127.0.0.1:7890
+                               socks5://127.0.0.1:7890
   -H, --hide-regex             Hide regex search result
   -F, --follow-redirects       Follow redirects
   -u, --url TEXT               Target url
+  --detail                     Show detailed result
   -l, --local PATH             Local file or directory, scan local
                                file/directory recursively
   --help                       Show this message and exit.
+
 ```
 
 ### Advanced Usage
@@ -171,6 +172,23 @@ headers:
   Cookie: ""
   User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.87 Safari/537.36 SE 2.X MetaSr 1.0
 
+urlFind:
+  - '["''‘“`]\s{0,6}(https{0,1}:[-a-zA-Z0-9()@:%_\+.~#?&//={}]{2,100}?)\s{0,6}["''‘“`]'
+  - =\s{0,6}(https{0,1}:[-a-zA-Z0-9()@:%_\+.~#?&//={}]{2,100})
+  - '["''‘“`]\s{0,6}([#,.]{0,2}/[-a-zA-Z0-9()@:%_\+.~#?&//={}]{2,100}?)\s{0,6}["''‘“`]'
+  - '"([-a-zA-Z0-9()@:%_\+.~#?&//={}]+?[/]{1}[-a-zA-Z0-9()@:%_\+.~#?&//={}]+?)"'
+  - href\s{0,6}=\s{0,6}["'‘“`]{0,1}\s{0,6}([-a-zA-Z0-9()@:%_\+.~#?&//={}]{2,100})|action\s{0,6}=\s{0,6}["'‘“`]{0,1}\s{0,6}([-a-zA-Z0-9()@:%_\+.~#?&//={}]{2,100})
+jsFind:
+  - (https{0,1}:[-a-zA-Z0-9（）@:%_\+.~#?&//=]{2,100}?[-a-zA-Z0-9（）@:%_\+.~#?&//=]{3}[.]js)
+  - '["''‘“`]\s{0,6}(/{0,1}[-a-zA-Z0-9（）@:%_\+.~#?&//=]{2,100}?[-a-zA-Z0-9（）@:%_\+.~#?&//=]{3}[.]js)'
+  - =\s{0,6}[",',’,”]{0,1}\s{0,6}(/{0,1}[-a-zA-Z0-9（）@:%_\+.~#?&//=]{2,100}?[-a-zA-Z0-9（）@:%_\+.~#?&//=]{3}[.]js)
+dangerousPath:
+  - logout
+  - update
+  - remove
+  - insert
+  - delete
+
 rules:
   - name: Swagger
     regex: \b[\w/]+?((swagger-ui.html)|(\"swagger\":)|(Swagger UI)|(swaggerUi)|(swaggerVersion))\b
@@ -210,7 +228,7 @@ rules:
 # TODO
 - [ ] Support headless browser
 - [ ] Add regex doc reference
-- [ ] Generate configuration file
+- [x] Generate configuration file
 - [x] Detect dangerous paths and avoid requesting them
 - [x] Support url-finder output format, add `--detail` option
 - [x] Support windows
