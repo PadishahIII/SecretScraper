@@ -222,7 +222,7 @@ class Crawler:
             content_type = ""
         if content_type.startswith("text"):
             is_text_like = True
-            if content_type.strip() == "text/html":
+            if content_type.strip().startswith("text/html"):
                 is_html = True
         elif content_type.startswith("application"):
             if content_type.endswith(
@@ -232,7 +232,9 @@ class Crawler:
             else:
                 is_text_like = True
 
-        if not is_text_like:
+        if not is_text_like or not is_html:  # or not is_html just process html
+            return
+        if response.status_code != 200:  # just process normal response
             return
 
         if self.max_depth <= 0 or url_node.depth + 1 <= self.max_depth:
@@ -298,6 +300,8 @@ class Crawler:
             logger.error(f"Invalid URL for {url}: {e}")
         except httpx.TimeoutException as e:
             logger.error(f"Timeout while fetching {url} ")
+        except httpx.ReadError as e:
+            logger.debug(f"Read error for {url}: {e}") # trigger when keyboard interrupt
         except KeyboardInterrupt:
             pass  # ignore
         except Exception as e:

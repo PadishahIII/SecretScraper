@@ -109,12 +109,12 @@ class CrawlerFacade:
                             obj = urlparse(url)
                             domain, _ = to_host_port(obj.netloc)
                             if len(domain) > 0:
-                                domains.add(domain)
+                                domains.add(domain.strip())
                         except:
                             pass
-                    self.formatter.output_url_per_domain(list(domains), self.crawler.url_dict)
+                    self.formatter.output_url_per_domain(domains, self.crawler.url_dict)
                     # JS per domain
-                    self.formatter.output_url_per_domain(list(domains), self.crawler.js_dict, "JS")
+                    self.formatter.output_url_per_domain(domains, self.crawler.js_dict, "JS")
                     # Domains
                     self.formatter.output_found_domains(list(self.crawler.found_urls), True)
                     # Secrets
@@ -177,7 +177,7 @@ class CrawlerFacade:
                         continue
                     start_urls.add(line.strip())
         if url is not None:
-            start_urls.add(url)
+            start_urls.add(url.strip())
         print_config(f"Target urls num: {len(start_urls)}")
 
         # Specify mode
@@ -260,7 +260,7 @@ class CrawlerFacade:
         rules: list[str] = self.settings.get("urlFind")
         rules.extend(self.settings.get("jsFind"))
         rules_dict = {f"urlFinder_{i}": rule for i, rule in enumerate(rules)}
-        parser = RegexURLParser(get_regex_handler(rules_dict))
+        parser = RegexURLParser(get_regex_handler(rules_dict, type_="regex"))
 
         # Detailed output
         if self.custom_settings.get("detail", False) is True:

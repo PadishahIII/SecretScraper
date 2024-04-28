@@ -84,11 +84,16 @@ def test_crawler_facade_update_settings(
         raise result.exception
     from secretscraper.cmdline import facade_obj, facade_settings
 
-    for validator in validators:
+    for i, validator in enumerate(validators):
         validator = Validator(*validator)
-        assert True is validate_setting(
-            facade_settings, validator.get_attr_func, validator.expected_value
-        )
+        try:
+            assert True is validate_setting(
+                facade_settings, validator.get_attr_func, validator.expected_value
+            )
+        except AssertionError as e:
+            logger.error(f"Expected: {validator.expected_value}")
+            raise Exception(
+                f"Excepted: {validator.expected_value}, Got: {validator.get_attr_func(facade_settings)} index: {i}, Invoke-args: {invoke_args}")
 
     # logger.info(f"Result: {result}\nOutput: {result.output}")
 
@@ -200,9 +205,12 @@ def test_crawler_facade_update_crawler(
 
 @pytest.mark.parametrize(
     ["invoke_args"],
+    # [(["-u", "http://127.0.0.1:8888", "--detail", "--max-depth=0"],)],
+
     # [(["-u", "https://www.baidu.com/", "-x", "http://127.0.0.1:8080", "--max-page=100"],)],
-    [(["-u", "http://qyyx.dqwjj.cn:29200//IDCAS_dq", "--detail"],)],
-    # [(["-u", "http://127.0.0.1:8888"],)],
+    # [(["-u", "http://qyyx.dqwjj.cn:29200//IDCAS_dq"],)],
+    # [(["--version"],)],
+    [(["-u", "https://gthnb.zjzwfw.gov.cn ", "-x", "http://127.0.0.1:8080", "-H"],)],
     # secretscraper -u https://meeting.nawaa.com:4433/zh-CN/home -H  -x http://127.0.0.1:8080
     # secretscraper -u http://127.0.0.1:8888
 

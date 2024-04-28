@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup
 
 from .handler import Handler
 from .entity import URL, URLNode, Secret
-from .util import is_static_resource
+from .util import is_static_resource, sanitize_url
 
 
 class URLParser:
@@ -56,7 +56,11 @@ class URLParser:
         for href in hrefs:
             if href is not None:
                 url_obj = urlparse(href)
+
                 if is_static_resource(url_obj.path):
+                    continue
+                href = sanitize_url(href)
+                if len(href) == 0:
                     continue
                 if (
                     len(url_obj.scheme) > 0
@@ -111,6 +115,9 @@ class RegexURLParser(URLParser):
             obj = urlparse(link)
             # ignore static resource
             if is_static_resource(obj.path):
+                continue
+            link = sanitize_url(link)
+            if len(link) == 0:
                 continue
             url_obj = URL(
                 scheme=base_url.url_object.scheme if obj.scheme == "" or obj.scheme not in (

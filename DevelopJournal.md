@@ -1,5 +1,10 @@
 # 2024.4.28
-- Prettify output, add `--detail` option
+- [x] Prettify output, add `--detail` option
+- [x] Optimize crawler
+  - [x] Filter 404 by default
+  - [x] Remove dirty data in url
+  - [x] do not seek urls in static resources and js
+  - [x] just process urls with response 200
 
 # 2024.4.26
 - **New Features**

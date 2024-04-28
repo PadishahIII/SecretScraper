@@ -50,6 +50,11 @@ class Formatter:
 
     def filter(self, url: URLNode) -> bool:
         """Determine whether a url should be displayed"""
+        try:
+            if int(url.response_status) == 404:  # filter 404 by default
+                return False
+        except ValueError:
+            pass
         if self._allowed_status is None:
             return True
         for status_range in self._allowed_status:
@@ -117,7 +122,7 @@ class Formatter:
             return url_hierarchy
 
     def output_url_per_domain(
-        self, domains: list[str], url_dict: dict[URLNode, typing.Iterable[URLNode]], url_type:str = "URL"
+        self, domains: set[str], url_dict: dict[URLNode, typing.Iterable[URLNode]], url_type: str = "URL"
     ) -> str:
         """Output the URLs for differenct domains"""
         url_hierarchy = ""
@@ -141,8 +146,8 @@ class Formatter:
                 if self.filter(url)
             }
             urls_str = "\n".join(url_set)
-            url_hierarchy += f"\n{len(url_set)} {url_type} from {domain}:\n{urls_str}"
-            click.echo(url_hierarchy)
+            url_hierarchy += f"\n{len(url_set)} {url_type} from {domain}:\n{urls_str}\n"
+        click.echo(url_hierarchy)
 
         return url_hierarchy
 
@@ -193,7 +198,7 @@ class Formatter:
                     f"{str(secret.type)}: {str(secret.data)}" for secret in secrets
                 }
                 secrets_str = "\n".join(secret_set)
-                url_secrets_str += f"\n{len(secret_set)} Secrets found in {url.url} {str(url.response_status)}:\n{secrets_str}\n"
+                url_secrets_str += f"\n{len(secret_set)} Secrets found in {url.url} [{self.format_colorful_status(str(url.response_status))}]:\n{secrets_str}\n"
         return url_secrets_str
 
     def output_local_scan_secrets(self, path_secrets: dict[pathlib.Path, typing.Iterable[Secret]]) -> str:

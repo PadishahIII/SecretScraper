@@ -154,9 +154,17 @@ class BSHandler(Handler):
         return results
 
 
-def get_regex_handler(rules: dict[str, str], *args, **kwargs) -> Handler:
+def get_regex_handler(rules: dict[str, str], type_: str = "", *args, **kwargs) -> Handler:
     """Return regex handler on current platform"""
-    if sys.platform.startswith("win"):
-        return ReRegexHandler(rules, *args, **kwargs)
+    if len(type_) == 0:
+        if sys.platform.startswith("win"):
+            return ReRegexHandler(rules, *args, **kwargs)
+        else:
+            return HyperscanRegexHandler(rules, *args, **kwargs)
     else:
-        return HyperscanRegexHandler(rules, *args, **kwargs)
+        if type == "regex":
+            return ReRegexHandler(rules, *args, **kwargs)
+        elif type == "hyperscan":
+            return HyperscanRegexHandler(rules, *args, **kwargs)
+        else:
+            return ReRegexHandler(rules, *args, **kwargs)

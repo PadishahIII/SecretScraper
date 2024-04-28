@@ -217,9 +217,13 @@ rules:
 ---
 
 # Change Log
-## 2024.4.28 Version 1.3.4
+## 2024.4.28 Version 1.3.5
 - **New Features**
   - Support windows
+  - Optimize crawler
+  - Prettify output, add `--detail` option
+  - Generate default configuration to settings.yml
+
 ## 2024.4.28 Version 1.3.2
 - **New Features**
   - Extract links via regex
