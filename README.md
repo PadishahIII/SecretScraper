@@ -211,6 +211,7 @@ rules:
 # Change Log
 ## 2024.4.29 Version 1.3.7
 - Test on multiple python versions
+- Support python 3.9~3.11
 ## 2024.4.29 Version 1.3.6
 - Repackage
 
