@@ -1,7 +1,7 @@
 """Common utility functions."""
 
-from collections import namedtuple
 import re
+from collections import namedtuple
 from urllib.parse import urlparse
 
 from dynaconf import LazySettings

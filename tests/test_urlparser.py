@@ -1,10 +1,11 @@
 import logging
 from urllib.parse import urlparse
 
-from secretscraper.entity import URLNode
-from secretscraper.urlparser import URLParser, RegexURLParser
-from secretscraper.handler import ReRegexHandler
 from secretscraper.config import settings
+from secretscraper.entity import URLNode
+from secretscraper.handler import ReRegexHandler
+from secretscraper.urlparser import RegexURLParser, URLParser
+
 from .conftest import html_text
 
 logger = logging.getLogger(__file__)

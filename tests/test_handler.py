@@ -8,8 +8,7 @@ from bs4 import BeautifulSoup
 
 from secretscraper.entity import Secret
 from secretscraper.exception import HandlerException
-from secretscraper.handler import (BSHandler, BSResult,
-                                   ReRegexHandler)
+from secretscraper.handler import BSHandler, BSResult, ReRegexHandler
 
 from . import settings
 

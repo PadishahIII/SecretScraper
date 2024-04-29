@@ -7,8 +7,8 @@ import pathlib
 import traceback
 import typing
 import warnings
-from urllib.parse import urlparse
 from collections import namedtuple
+from urllib.parse import urlparse
 
 import click
 import dynaconf
@@ -20,7 +20,7 @@ from .filter import (ChainedURLFilter, DomainBlackListURLFilter,
 from .handler import get_regex_handler
 from .output_formatter import Formatter
 from .scanner import FileScanner
-from .urlparser import URLParser, RegexURLParser
+from .urlparser import RegexURLParser, URLParser
 from .util import Range, read_rules_from_setting, to_host_port
 
 logger = logging.getLogger(__name__)

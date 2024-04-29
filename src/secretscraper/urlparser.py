@@ -5,8 +5,8 @@ from urllib.parse import ParseResult, urlparse
 
 from bs4 import BeautifulSoup
 
+from .entity import URL, Secret, URLNode
 from .handler import Handler
-from .entity import URL, URLNode, Secret
 from .util import is_static_resource, sanitize_url
 
 
