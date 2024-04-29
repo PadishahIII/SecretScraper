@@ -2,6 +2,7 @@ import asyncio
 import concurrent.futures
 import logging
 import sys
+import typing
 
 import pytest
 from bs4 import BeautifulSoup
@@ -22,7 +23,7 @@ logger = logging.getLogger(__name__)
 # @duration
 def test_re_regex_handler(regex_dict, resource_text):
     handler = ReRegexHandler(rules=regex_dict)
-    secrets: list[Secret] = list(handler.handle(resource_text))
+    secrets: typing.List[Secret] = list(handler.handle(resource_text))
     # ensure all types of secrets are extracted at least once
     keys = set(map(lambda s: s.type, secrets))
     assert len(keys) == len(regex_dict)
@@ -59,7 +60,7 @@ def test_hyperscan_regex_handler(regex_dict, resource_text):
 
 
 def test_bs_handler(html_text):
-    def filter_login(soup: BeautifulSoup) -> list[BSResult]:
+    def filter_login(soup: BeautifulSoup) -> typing.List[BSResult]:
         """Get all link elements that contains login literal"""
         links = soup.find_all("a")
         return [link for link in links if link.getText() == "login"]

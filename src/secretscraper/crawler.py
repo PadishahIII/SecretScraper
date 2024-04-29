@@ -34,12 +34,12 @@ class Crawler:
 
     def __init__(
         self,
-        start_urls: list[str],
+        start_urls: typing.List[str],
         # client: aiohttp.ClientSession,
         url_filter: URLFilter,
         parser: URLParser,
         handler: Handler,
-        # allowed_status: list[Range] = None,
+        # allowed_status: typing.List[Range] = None,
         max_page_num: int = 0,
         max_depth: int = 3,
         num_workers: int = 100,
@@ -49,7 +49,7 @@ class Crawler:
         timeout: float = 5,
         debug: bool = False,
         follow_redirects: bool = False,
-        dangerous_paths: list[str] = None,
+        dangerous_paths: typing.List[str] = None,
     ):
         """
 
@@ -88,14 +88,14 @@ class Crawler:
         self.visited_urls: Set[URLNode] = set()
         self.found_urls: Set[URLNode] = set()  # newly found urls
         self.working_queue: queue.Queue[URLNode] = queue.Queue()  # BP queue
-        self.url_dict: dict[URLNode, set[URLNode]] = (
+        self.url_dict: typing.Dict[URLNode, typing.Set[URLNode]] = (
             dict()
         )  # url and all of its children url
-        self.js_dict: dict[URLNode, set[URLNode]] = (
+        self.js_dict: typing.Dict[URLNode, typing.Set[URLNode]] = (
             dict()
         )  # url and all of its children js
         self.total_page: int = 0  # total number of pages found, include error pages
-        self.url_secrets: dict[URLNode, set[Secret]] = (
+        self.url_secrets: typing.Dict[URLNode, typing.Set[Secret]] = (
             dict()
         )  # url and secrets found from it
         self._event_loop = asyncio.new_event_loop()
@@ -262,7 +262,7 @@ class Crawler:
             is_extending = False
 
         logger.debug(f"Extracting links from {url_node.url}")
-        url_children: set[URLNode] = self.parser.extract_urls(url_node, response_text)
+        url_children: typing.Set[URLNode] = self.parser.extract_urls(url_node, response_text)
         if len(url_children) > 0:
             self.url_dict[url_node] = set()
         elif is_html and (

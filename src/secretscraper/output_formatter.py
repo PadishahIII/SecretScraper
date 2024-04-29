@@ -15,7 +15,7 @@ class Formatter:
 
     def __init__(
         self,
-        allowed_status: list[Range] = None,
+        allowed_status: typing.List[Range] = None,
     ) -> None:
         """
 
@@ -24,11 +24,11 @@ class Formatter:
         self._allowed_status = allowed_status
 
     @property
-    def allowed_status(self) -> list[Range]:
+    def allowed_status(self) -> typing.List[Range]:
         return self._allowed_status
 
     @allowed_status.setter
-    def allowed_status(self, allowed_status: list[Range]):
+    def allowed_status(self, allowed_status: typing.List[Range]):
         self._allowed_status = allowed_status
 
     def format_colorful_status(self, status: str) -> str:
@@ -86,7 +86,7 @@ class Formatter:
             return result
 
     def output_url_hierarchy(
-        self, url_dict: dict[URLNode, typing.Iterable[URLNode]], is_print: bool = False
+        self, url_dict: typing.Dict[URLNode, typing.Iterable[URLNode]], is_print: bool = False
     ) -> str:
         """Output the url hierarchy"""
         if not is_print:
@@ -122,11 +122,11 @@ class Formatter:
             return url_hierarchy
 
     def output_url_per_domain(
-        self, domains: set[str], url_dict: dict[URLNode, typing.Iterable[URLNode]], url_type: str = "URL"
+        self, domains: typing.Set[str], url_dict: typing.Dict[URLNode, typing.Iterable[URLNode]], url_type: str = "URL"
     ) -> str:
         """Output the URLs for differenct domains"""
         url_hierarchy = ""
-        domain_secrets: dict[str, list[URLNode]] = dict()
+        domain_secrets: typing.Dict[str, typing.List[URLNode]] = dict()
         for base, urls in url_dict.items():
             domain, _ = to_host_port(base.url_object.netloc)
             if domain not in domains:
@@ -152,7 +152,7 @@ class Formatter:
         return url_hierarchy
 
     def output_js(
-        self, js_dict: dict[URLNode, typing.Iterable[URLNode]], is_print: bool = False
+        self, js_dict: typing.Dict[URLNode, typing.Iterable[URLNode]], is_print: bool = False
     ) -> str:
         """Output the url hierarchy"""
         if is_print:
@@ -182,10 +182,10 @@ class Formatter:
             return js_str
 
     def output_secrets(
-        self, url_secrets: dict[URLNode, typing.Iterable[Secret]]
+        self, url_secrets: typing.Dict[URLNode, typing.Iterable[Secret]]
     ) -> str:
         """Output all secrets found
-        :type secrets: dict[str, set[Secret]]
+        :type secrets: typing.Dict[str, typing.Set[Secret]]
         :param secrets: dict keys indicate url and values indicate the secrets found from the url
 
         """
@@ -201,7 +201,7 @@ class Formatter:
                 url_secrets_str += f"\n{len(secret_set)} Secrets found in {url.url} [{self.format_colorful_status(str(url.response_status))}]:\n{secrets_str}\n"
         return url_secrets_str
 
-    def output_local_scan_secrets(self, path_secrets: dict[pathlib.Path, typing.Iterable[Secret]]) -> str:
+    def output_local_scan_secrets(self, path_secrets: typing.Dict[pathlib.Path, typing.Iterable[Secret]]) -> str:
         """Display all secrets found in local file"""
         if len(path_secrets) == 0:
             click.echo("No secrets found.\n")

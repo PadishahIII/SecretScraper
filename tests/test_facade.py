@@ -75,7 +75,7 @@ Validator = namedtuple("Validator", ["get_attr_func", "expected_value"])
     ],
 )
 def test_crawler_facade_update_settings(
-    clicker: CliRunner, invoke_args: list[str], validators: list[Validator_Type]
+    clicker: CliRunner, invoke_args: typing.List[str], validators: typing.List[Validator_Type]
 ):
     """Test updating settings via option"""
     result = clicker.invoke(main, invoke_args)
@@ -190,7 +190,7 @@ def test_crawler_facade_update_settings(
     ],
 )
 def test_crawler_facade_update_crawler(
-    clicker: CliRunner, invoke_args: list[str], validators: list[Validator_Type]
+    clicker: CliRunner, invoke_args: typing.List[str], validators: typing.List[Validator_Type]
 ):
     """Test updating crawler config via option"""
     result = clicker.invoke(main, invoke_args)
@@ -223,7 +223,7 @@ def test_crawler_facade_update_crawler(
     # secretscraper -u http://127.0.0.1:8888
 
 )
-def test_normal_run(clicker: CliRunner, invoke_args: list[str]):
+def test_normal_run(clicker: CliRunner, invoke_args: typing.List[str]):
     result = clicker.invoke(main, invoke_args)
     if result.exception is not None:
         logger.exception(result.exception)
@@ -242,7 +242,7 @@ def test_normal_run(clicker: CliRunner, invoke_args: list[str]):
 #     ],
 #
 # )
-# def test_local_scan(clicker: CliRunner, invoke_args: list[str]):
+# def test_local_scan(clicker: CliRunner, invoke_args: typing.List[str]):
 #     """Test local file scanner"""
 #     result = clicker.invoke(main, invoke_args)
 #     if result.exception is not None:

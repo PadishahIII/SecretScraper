@@ -2,6 +2,7 @@
 import logging
 import mimetypes
 import pathlib
+import typing
 
 from .entity import Secret
 from .exception import FileScannerException
@@ -15,7 +16,7 @@ class FileScanner:
 
     def __init__(
         self,
-        targets: list[pathlib.Path],
+        targets: typing.List[pathlib.Path],
         handler: Handler,
     ):
         """
@@ -27,7 +28,7 @@ class FileScanner:
         self.targets = targets
         self.handler = handler
 
-        self.secrets: dict[pathlib.Path, set[Secret]] = {}
+        self.secrets: typing.Dict[pathlib.Path, typing.Set[Secret]] = {}
 
     def start(self):
         """Start scanning"""
@@ -40,7 +41,7 @@ class FileScanner:
             # pass non-text file
             content: str = file.read_text(encoding="utf8", errors="ignore")
             logger.debug(f"Read file content: {len(content)}bytes from {file.name}")
-            secrets: set[Secret] = set(list(self.handler.handle(content)))
+            secrets: typing.Set[Secret] = set(list(self.handler.handle(content)))
             if len(secrets) > 0:
                 self.secrets[file] = secrets
                 logger.debug(f"Found {len(secrets)} secrets from {file.name}")

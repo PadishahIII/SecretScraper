@@ -1,6 +1,7 @@
 """Common utility functions."""
 
 import re
+import typing
 from collections import namedtuple
 from urllib.parse import urlparse
 
@@ -12,11 +13,11 @@ from .exception import SecretScraperException
 Range = namedtuple("Range", ["start", "end"])
 
 
-def read_rules_from_setting(settings) -> dict[str, str]:
+def read_rules_from_setting(settings) -> typing.Dict[str, str]:
     """Read rules from settings
 
     :param settings: Dynaconf settings
-    :return dict[str, str]: key for rule name and value for regex literal
+    :return typing.Dict[str, str]: key for rule name and value for regex literal
     """
     rules_dict = dict()
     try:

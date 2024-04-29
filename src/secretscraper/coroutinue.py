@@ -82,7 +82,7 @@ class AsyncPool:
         queue_capacity: int = 1000,
     ):
         self.event_loop = event_loop
-        self.workers: list[AsyncWorker] = []
+        self.workers: typing.List[AsyncWorker] = []
         self.num_workers: int = num_workers
         self.queue_capacity: int = queue_capacity
         self.task_queue: asyncio.Queue[AsyncTask] = asyncio.Queue(
@@ -103,9 +103,9 @@ class AsyncPool:
         await self.task_queue.put(task)
         return task.future
 
-    async def submit_all(self, tasks: list[AsyncTask]) -> list[asyncio.Future]:
+    async def submit_all(self, tasks: typing.List[AsyncTask]) -> typing.List[asyncio.Future]:
         """Submit multiple tasks"""
-        futures: list[asyncio.Future] = []
+        futures: typing.List[asyncio.Future] = []
         for task in tasks:
             await self.submit(task)
             futures.append(task.future)
@@ -175,7 +175,7 @@ class AsyncPoolCollector:
         future.add_done_callback(self.done_queue.put_nowait)
         return future
 
-    async def submit_all(self, tasks: list[AsyncTask]) -> list[asyncio.Future]:
+    async def submit_all(self, tasks: typing.List[AsyncTask]) -> typing.List[asyncio.Future]:
         """Submit multiple tasks"""
         futures = await self.pool.submit_all(tasks)
         [future.add_done_callback(self.done_queue.put_nowait) for future in futures]

@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 @pytest.fixture
 @functools.cache
-def start_urls() -> list[str]:
+def start_urls() -> typing.List[str]:
     return [
         "https://news.ycombinator.com/",
         # "https://scrapeme.live/shop/",

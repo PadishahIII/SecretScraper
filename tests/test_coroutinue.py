@@ -37,7 +37,7 @@ def task_queue_half_sec():
 
 def generate_task(
     num: int, sec: float = 0.5
-) -> typing.Generator[list[AsyncTask], None, None]:
+) -> typing.Generator[typing.List[AsyncTask], None, None]:
     yield [AsyncTask(async_increment, i, sec) for i in range(num)]
 
 

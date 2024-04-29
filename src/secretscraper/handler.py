@@ -25,20 +25,20 @@ class Handler(Protocol):
 class ReRegexHandler(Handler):
     """ Regex handler using the `re` module, simple but have lowest performance."""
 
-    def __init__(self, rules: dict[str, str], flags: int = 0):
+    def __init__(self, rules: typing.Dict[str, str], flags: int = 0):
         """
 
         :param rules: rules dictionary with keys indicating type and values indicating the regex
         """
         self.types = list(rules.keys())
         regexes = list(rules.values())
-        self.regexes: list[re.Pattern] = list()
+        self.regexes: typing.List[re.Pattern] = list()
         for regex in regexes:
             self.regexes.append(re.compile(regex, flags=flags | re.IGNORECASE))
 
     def handle(self, text: str) -> typing.Iterable[Secret]:
         """Extract secret data"""
-        result_list: list[Secret] = list()
+        result_list: typing.List[Secret] = list()
         for index, regex in enumerate(self.regexes):
             # match = regex.search(text)
             # if match is not None:
@@ -68,7 +68,7 @@ if not sys.platform.startswith("win"):
         """Regex handler using `hyperscan` module"""
 
         def __init__(
-            self, rules: dict[str, str], lazy_init: bool = False, hs_flag: int = 0
+            self, rules: typing.Dict[str, str], lazy_init: bool = False, hs_flag: int = 0
         ):
             """
 
@@ -83,15 +83,15 @@ if not sys.platform.startswith("win"):
                 hs_flag | hyperscan.HS_FLAG_SOM_LEFTMOST | hyperscan.HS_FLAG_CASELESS
             )
             self._db: typing.Optional[hyperscan.Database] = None
-            self.patterns: dict[int, bytes] = dict()  # pattern id => regex in bytes
-            self.types: dict[int, str] = dict()  # pattern id => type
+            self.patterns: typing.Dict[int, bytes] = dict()  # pattern id => regex in bytes
+            self.types: typing.Dict[int, str] = dict()  # pattern id => type
             if not lazy_init:
                 self.init()
 
         def init(self):
             """Initialize the hyperscan database."""
             self._db = hyperscan.Database()
-            flags: list[int] = [self._hs_flag for _ in range(len(self.rules))]
+            flags: typing.List[int] = [self._hs_flag for _ in range(len(self.rules))]
             for index, type_str in enumerate(self.rules):
                 regex = self.rules.get(type_str)
                 self.patterns[index] = regex.encode("utf-8")
@@ -114,7 +114,7 @@ if not sys.platform.startswith("win"):
             if not self._init:
                 raise HandlerException("Hyperscan database is not initialized")
 
-            results: list[Secret] = list()
+            results: typing.List[Secret] = list()
 
             def on_match(
                 id: int,
@@ -138,7 +138,7 @@ class BSHandler(Handler):
     """BeautifulSoup handler that filter html elements on demand"""
 
     def __init__(
-        self, filter_func: typing.Callable[[BeautifulSoup], list[BSResult]]
+        self, filter_func: typing.Callable[[BeautifulSoup], typing.List[BSResult]]
     ) -> None:
         self.filter = filter_func
 
@@ -149,15 +149,15 @@ class BSHandler(Handler):
         :param text: should be in html format
         """
         soup = BeautifulSoup(text, "html.parser")
-        result: list[BSResult] = self.filter(soup)
-        results: list[Secret] = list()
+        result: typing.List[BSResult] = self.filter(soup)
+        results: typing.List[Secret] = list()
         if result is not None:
             secret = Secret(type="HTML Element", data=result)
             results.append(secret)
         return results
 
 
-def get_regex_handler(rules: dict[str, str], type_: str = "", *args, **kwargs) -> Handler:
+def get_regex_handler(rules: typing.Dict[str, str], type_: str = "", *args, **kwargs) -> Handler:
     """Return regex handler on current platform"""
     if len(type_) == 0:
         is_hyperscan = False

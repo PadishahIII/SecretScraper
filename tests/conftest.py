@@ -1,6 +1,7 @@
 """Test config"""
 
 import functools
+import typing
 from pathlib import Path
 
 import pytest
@@ -35,5 +36,5 @@ def html_text() -> str:
 
 @pytest.fixture
 @functools.cache
-def regex_dict() -> dict[str, str]:
+def regex_dict() -> typing.Dict[str, str]:
     return read_rules_from_setting(settings)

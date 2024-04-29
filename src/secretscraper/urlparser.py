@@ -107,7 +107,7 @@ class RegexURLParser(URLParser):
         found_urls: Set[URLNode] = set()
         current_depth = base_url.depth + 1
 
-        links: set[Secret] = set(self.handler.handle(text))
+        links: typing.Set[Secret] = set(self.handler.handle(text))
         for link in links:
             link = link.data
             if len(link) == 0:

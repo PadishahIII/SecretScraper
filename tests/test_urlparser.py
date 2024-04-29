@@ -41,7 +41,7 @@ def test_regex_urlparser(html_text):
         url=base_url, url_object=urlparse(base_url), depth=0, parent=None
     )
 
-    rules: list[str] = settings.get("urlFind")
+    rules: typing.List[str] = settings.get("urlFind")
     rules.extend(settings.get("jsFind"))
     rules_dict = {f"urlFinder_{i}": rule for i, rule in enumerate(rules)}
     parser = RegexURLParser(ReRegexHandler(rules_dict))

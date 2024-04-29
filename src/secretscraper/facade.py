@@ -210,7 +210,7 @@ class CrawlerFacade:
 
         # Status filter
         status: typing.Optional[str] = self.custom_settings.get("status", None)
-        allowed_status: typing.Optional[list[Range]] = None
+        allowed_status: typing.Optional[typing.List[Range]] = None
         if status is not None:
             for status_ex in status.split(","):
                 status_ex = status_ex.strip()
@@ -253,11 +253,11 @@ class CrawlerFacade:
             self.settings["verbose"] = verbose
 
         # Read rules from config file
-        rules: dict[str, str] = read_rules_from_setting(self.settings)
+        rules: typing.Dict[str, str] = read_rules_from_setting(self.settings)
         handler = get_regex_handler(rules)
 
         # Read url/js regex
-        rules: list[str] = self.settings.get("urlFind")
+        rules: typing.List[str] = self.settings.get("urlFind")
         rules.extend(self.settings.get("jsFind"))
         rules_dict = {f"urlFinder_{i}": rule for i, rule in enumerate(rules)}
         parser = RegexURLParser(get_regex_handler(rules_dict, type_="regex"))
@@ -267,7 +267,7 @@ class CrawlerFacade:
             self.detail_output = True
 
         # Dangerous paths
-        dangerous_paths: list[str] = list()
+        dangerous_paths: typing.List[str] = list()
         if self.settings.get("dangerousPath", None) is not None:
             dangerous_paths.extend(set(self.settings("dangerousPath")))
 
@@ -344,14 +344,14 @@ class FileScannerFacade:
         print_config(f"Output file: {self.outfile}")
 
         # Read rules from config file
-        rules: dict[str, str] = read_rules_from_setting(self.settings)
+        rules: typing.Dict[str, str] = read_rules_from_setting(self.settings)
         handler = get_regex_handler(rules)
 
         # Get all files from directory
         base: typing.Optional[pathlib.Path] = self.custom_settings.get('local', None)
         if base is None:
             raise FacadeException(f"Internal error: No base directory")
-        targets: list[pathlib.Path] = list()
+        targets: typing.List[pathlib.Path] = list()
         if base.is_file():
             targets.append(base)
         else:
