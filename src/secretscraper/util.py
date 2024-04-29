@@ -44,7 +44,7 @@ def is_static_resource(path: str) -> bool:
     return False
 
 
-def to_host_port(netloc: str) -> tuple[str, str]:
+def to_host_port(netloc: str) -> typing.Tuple[str, str]:
     """Convert netloc to host and port"""
     r = netloc.split(":")
     if len(r) == 1:

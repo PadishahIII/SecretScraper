@@ -38,7 +38,7 @@ def validate_setting(
         return False
 
 
-Validator_Type = tuple[
+Validator_Type = typing.Tuple[
     typing.Callable[
         [
             typing.Any,
