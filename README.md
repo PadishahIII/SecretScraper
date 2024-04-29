@@ -1,6 +1,7 @@
 # SecretScraper
 
 ![Tests](https://github.com/PadishahIII/SecretScraper/actions/workflows/main.yml/badge.svg)
+![Pypi Python Version](https://img.shields.io/pypi/pyversions/secretscraper.svg?style=plastic)
 
 ## Overview
 
