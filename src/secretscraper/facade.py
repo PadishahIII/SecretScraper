@@ -92,14 +92,14 @@ class CrawlerFacade:
                 self.crawler.start()
                 if self.detail_output:
                     # print_func_colorful(self.print_func,f"Total page: {self.crawler.total_page}")
-                    self.formatter.output_url_hierarchy(self.crawler.url_dict, True)
+                    f.write(self.formatter.output_url_hierarchy(self.crawler.url_dict, True))
 
                     if not self.hide_regex:
                         print_func_colorful(f, self.print_func,
                                             f"{self.formatter.output_secrets(self.crawler.url_secrets)}"
                                             )
                     print_func_colorful(f, self.print_func, f"{self.formatter.output_js(self.crawler.js_dict)}")
-                    self.formatter.output_found_domains(list(self.crawler.found_urls), True)
+                    f.write(self.formatter.output_found_domains(list(self.crawler.found_urls), True))
                 else:
                     # tidy output
                     # URLs per domain
@@ -112,11 +112,11 @@ class CrawlerFacade:
                                 domains.add(domain.strip())
                         except:
                             pass
-                    self.formatter.output_url_per_domain(domains, self.crawler.url_dict)
+                    f.write(self.formatter.output_url_per_domain(domains, self.crawler.url_dict))
                     # JS per domain
-                    self.formatter.output_url_per_domain(domains, self.crawler.js_dict, "JS")
+                    f.write(self.formatter.output_url_per_domain(domains, self.crawler.js_dict, "JS"))
                     # Domains
-                    self.formatter.output_found_domains(list(self.crawler.found_urls), True)
+                    f.write(self.formatter.output_found_domains(list(self.crawler.found_urls), True))
                     # Secrets
                     if not self.hide_regex:
                         print_func_colorful(f, self.print_func,

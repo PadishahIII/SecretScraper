@@ -62,6 +62,7 @@ Validator = namedtuple("Validator", ["get_attr_func", "expected_value"])
                 "--max-depth=3",
                 "-x http://127.0.0.1:7890",
                 "-F",
+                "--debug"
             ],
             [
                 (lambda setting: setting["headers"]["User-Agent"], "MyUA"),
@@ -70,6 +71,8 @@ Validator = namedtuple("Validator", ["get_attr_func", "expected_value"])
                 (lambda setting: setting["max_page_num"], 100),
                 (lambda setting: setting["proxy"], "http://127.0.0.1:7890"),
                 (lambda setting: setting["follow_redirects"], True),
+                (lambda setting: setting["debug"], True),
+                (lambda setting: setting["loglevel"], "DEBUG"),
             ],
         ),
     ],

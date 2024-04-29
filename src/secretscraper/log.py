@@ -6,7 +6,8 @@ from logging.config import dictConfig
 
 from secretscraper.config import settings
 
-os.makedirs(settings.LOGPATH, exist_ok=True)
+
+# os.makedirs(settings.LOGPATH, exist_ok=True) # not make new dir for log
 
 
 def verbose_formatter(verbose: int) -> str:

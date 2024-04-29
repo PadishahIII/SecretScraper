@@ -12,7 +12,6 @@ from secretscraper import __version__
 from secretscraper.config import settings
 from secretscraper.exception import FacadeException
 from secretscraper.facade import CrawlerFacade, FileScannerFacade
-from secretscraper.log import init_log
 
 facade_settings = settings  # for unit test
 facade_obj = None
@@ -108,9 +107,7 @@ def main(**options):
     if options["version"]:
         click.echo(__version__)
         exit(0)
-    if options["debug"]:
-        settings.DEBUG = True
-        settings.LOGLEVEL = "debug"
+    # load config file
     if options["config"] is not None:
         if not options["config"].exists():
             click.echo(f"Error: config file not exists: {str(options['config'])}")
@@ -120,6 +117,11 @@ def main(**options):
         file = pathlib.Path() / "settings.yml"
         generate_configuration(file)
         settings.load_file(path=str(file.absolute()))
+
+    if options["debug"]:
+        settings['debug'] = True
+        settings['loglevel'] = "debug"
+
     options_dict = dict()
     for key, value in options.items():
         if value is not None:
@@ -128,6 +130,7 @@ def main(**options):
     try:
         global facade_settings, facade_obj
         print_func = functools.partial(click.echo, color=True)
+        from secretscraper.log import init_log
         init_log()
         if options['local'] is not None:
             facade = FileScannerFacade(settings, options_dict, print_func)
@@ -158,7 +161,7 @@ proxy: "" # http://127.0.0.1:7890
 max_depth: 1 # 0 for no limit
 max_page_num: 1000 # 0 for no limit
 timeout: 5
-follow_redirects: false
+follow_redirects: true
 workers_num: 1000
 headers:
   Accept: "*/*"

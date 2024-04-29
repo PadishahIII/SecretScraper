@@ -21,6 +21,10 @@
 - Add status to url result
 - All crawler test passed
 
+# TODO
+- [x] Log file perform not good
+- [x] Debug option perform not good
+- [x] Remove logpath option
 
 # ISSUES
 ## [Not Sovled] Windows+Python3.11: No module named secretscraper.__main__; 'secretscraper' is a package and cannot be directly executed
