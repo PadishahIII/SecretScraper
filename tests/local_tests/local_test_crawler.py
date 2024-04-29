@@ -21,9 +21,9 @@ logger = logging.getLogger(__name__)
 @functools.cache
 def start_urls() -> list[str]:
     return [
-        # "https://news.ycombinator.com/",
+        "https://news.ycombinator.com/",
         # "https://scrapeme.live/shop/",
-        "https://scrape.center/",
+        # "https://scrape.center/",
         # "invalid.url"
     ]
 

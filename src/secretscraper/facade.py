@@ -58,7 +58,7 @@ class CrawlerFacade:
         self,
         full_settings: dynaconf.Dynaconf,
         custom_settings: dict,
-        print_func: typing.Callable[[str], ...] = print,
+        print_func: typing.Callable[[str], typing.Any] = print,
     ) -> None:
         """
 
@@ -286,7 +286,7 @@ class CrawlerFacade:
             timeout=self.settings.get("timeout"),
             debug=self.debug,
             follow_redirects=self.settings["follow_redirects"],
-            dangerous_paths = dangerous_paths
+            dangerous_paths=dangerous_paths
         )
         return crawler
 
@@ -298,7 +298,7 @@ class FileScannerFacade:
         self,
         full_settings: dynaconf.Dynaconf,
         custom_settings: dict,
-        print_func: typing.Callable[[str], ...] = print,
+        print_func: typing.Callable[[str], typing.Any] = print,
     ):
         self.settings = full_settings
         self.custom_settings = custom_settings

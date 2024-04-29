@@ -1,3 +1,6 @@
+# 2024.4.29
+- [ ] Support 3.8~3.11
+- [ ] Add more CLI tests
 # 2024.4.28
 - [x] Prettify output, add `--detail` option
 - [x] Optimize crawler

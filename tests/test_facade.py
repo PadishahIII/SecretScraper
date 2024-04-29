@@ -171,13 +171,21 @@ def test_crawler_facade_update_settings(
                 "-u",
                 "http://127.0.0.1:8888",
                 "-i",
-                pathlib.Path(__file__).parent / "settings.yml",
+                pathlib.Path(__file__).parent / "local_tests" / "settings.yml",
             ],
             [(lambda crawler: crawler.headers["User-Agent"], "Test-UA")],
         ),
         (
             ["-u", "http://127.0.0.1:8888", "-F"],
             [(lambda crawler: crawler.follow_redirects, True)],
+        ),
+        (
+            ["-u", "http://127.0.0.1:8888", "-H"],
+            [(lambda crawler: True, True)],
+        ),
+        (
+            ["-u", "http://127.0.0.1:8888", "--detail"],
+            [(lambda crawler: True, True)],
         ),
     ],
 )
@@ -227,9 +235,9 @@ def test_normal_run(clicker: CliRunner, invoke_args: list[str]):
 @pytest.mark.parametrize(
     ["invoke_args"],
     [
-        (["--local", "local_scan"],),
-        (["--local", "local_scan/empty_dir"],),
-        (["--local", "local_scan/source_text.txt"],),
+        (["--local", "tests/local_tests/local_scan"],),
+        (["--local", "tests/local_tests/local_scan/empty_dir"],),
+        (["--local", "tests/local_tests/local_scan/source_text.txt"],),
 
     ],
 
