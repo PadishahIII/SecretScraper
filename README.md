@@ -15,6 +15,7 @@ data via regular expression.
 - Web crawler: extract links via both DOM hierarchy and regex
 - Support domain white list and black list
 - Support multiple targets, input target URLs from a file
+- Support local file scan
 - Scalable customization: header, proxy, timeout, cookie, scrape depth, follow redirect, etc.
 - Built-in regex to search for sensitive information
 - Flexible configuration in yaml format
