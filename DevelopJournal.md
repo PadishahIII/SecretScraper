@@ -4,6 +4,7 @@
 - [x] Add more CLI tests
   - test_facade
   - test_local_scan
+-
 # 2024.4.28
 - [x] Prettify output, add `--detail` option
 - [x] Optimize crawler
@@ -19,3 +20,8 @@
 # 2024.4.15
 - Add status to url result
 - All crawler test passed
+
+
+# ISSUES
+## [Not Sovled] Windows+Python3.11: No module named secretscraper.__main__; 'secretscraper' is a package and cannot be directly executed
+On Windows, python3.10 works fine, python3.11 occur this issue.
