@@ -207,8 +207,9 @@ rules:
   - name: Suspicious API Key
     regex: "[\"'][0-9a-zA-Z]{32}['\"]"
     loaded: true
-"""
+""", encoding="utf8", errors="ignore"
     )
+
 
 if __name__ == "__main__":
     main()

@@ -4,7 +4,7 @@ import re
 from collections import namedtuple
 from urllib.parse import urlparse
 
-from dynaconf import LazySettings
+# from dynaconf import LazySettings
 
 from .entity import URL
 from .exception import SecretScraperException
@@ -12,7 +12,7 @@ from .exception import SecretScraperException
 Range = namedtuple("Range", ["start", "end"])
 
 
-def read_rules_from_setting(settings: LazySettings) -> dict[str, str]:
+def read_rules_from_setting(settings) -> dict[str, str]:
     """Read rules from settings
 
     :param settings: Dynaconf settings
