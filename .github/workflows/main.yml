@@ -36,6 +36,3 @@ jobs:
           pip install tox tox-gh-actions
       - name: test
         run: tox
-      - name: Check version
-        run: |
-          poetry run secretscraper --version

@@ -107,7 +107,7 @@ def main(**options):
     """Main commands"""
     if options["version"]:
         click.echo(__version__)
-        exit(1)
+        exit(0)
     if options["debug"]:
         settings.DEBUG = True
         settings.LOGLEVEL = "debug"
