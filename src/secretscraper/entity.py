@@ -4,7 +4,12 @@ import typing
 from dataclasses import dataclass, field
 from urllib.parse import ParseResult, urlparse
 
-URL: typing.TypeAlias = ParseResult
+try:
+    from typing import TypeAlias
+
+    URL: TypeAlias = ParseResult
+except ImportError:
+    URL = ParseResult
 
 
 @dataclass(unsafe_hash=True, eq=True)

@@ -209,6 +209,8 @@ rules:
 ---
 
 # Change Log
+## 2024.4.29 Version 1.3.7
+- Test on multiple python versions
 ## 2024.4.29 Version 1.3.6
 - Repackage
 
