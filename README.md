@@ -209,6 +209,9 @@ rules:
 ---
 
 # Change Log
+## 2024.4.29 Version 1.3.6
+- Repackage
+
 ## 2024.4.28 Version 1.3.5
 - **New Features**
   - Support windows
