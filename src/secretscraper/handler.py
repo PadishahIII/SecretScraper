@@ -4,7 +4,7 @@ import queue
 import re
 import sys
 import typing
-from typing import Protocol
+from typing import Protocol, Union
 
 from bs4 import BeautifulSoup, NavigableString, Tag
 
@@ -13,7 +13,7 @@ from secretscraper.exception import HandlerException
 
 # T = typing.TypeVar("T")
 # IterableAsyncOrSync: typing.TypeAlias = typing.Iterable[T] | typing.AsyncIterable[T]
-BSResult = Tag | NavigableString | None
+BSResult = Union[Tag, NavigableString, None]
 
 
 class Handler(Protocol):
