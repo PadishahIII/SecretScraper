@@ -21,7 +21,7 @@ data via regular expression.
 
 ## Prerequisite
 - Platform: Test on MaxOS, Ubuntu and Windows.
-- Python Version >= 3.11
+- Python Version >= 3.9
 
 ## Usage
 
