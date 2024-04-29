@@ -74,3 +74,12 @@ def sanitize_url(url: str) -> str:
     except:
         pass
     return url
+
+
+def is_hyperscan() -> bool:
+    """Check if hyperscan is usable"""
+    try:
+        import hyperscan
+        return True
+    except ImportError:
+        return False

@@ -9,6 +9,7 @@ from bs4 import BeautifulSoup
 from secretscraper.entity import Secret
 from secretscraper.exception import HandlerException
 from secretscraper.handler import BSHandler, BSResult, ReRegexHandler
+from secretscraper.util import is_hyperscan
 
 from . import settings
 
@@ -28,7 +29,7 @@ def test_re_regex_handler(regex_dict, resource_text):
 
 
 def test_hyperscan_regex_handler(regex_dict, resource_text):
-    if sys.platform.startswith("win"):
+    if not is_hyperscan():
         return
     from secretscraper.handler import HyperscanRegexHandler
     handler = HyperscanRegexHandler(rules=regex_dict, lazy_init=True)
