@@ -58,7 +58,10 @@ class ReRegexHandler(Handler):
 
 if not sys.platform.startswith("win"):
     # hyperscan does not support windows
-    import hyperscan
+    try:
+        import hyperscan
+    except ImportError:
+        hyperscan = None
 
 
     class HyperscanRegexHandler(Handler):
@@ -157,7 +160,13 @@ class BSHandler(Handler):
 def get_regex_handler(rules: dict[str, str], type_: str = "", *args, **kwargs) -> Handler:
     """Return regex handler on current platform"""
     if len(type_) == 0:
-        if sys.platform.startswith("win"):
+        is_hyperscan = False
+        try:
+            import hyperscan
+            is_hyperscan = True
+        except ImportError:
+            is_hyperscan = False
+        if sys.platform.startswith("win") or not is_hyperscan:
             return ReRegexHandler(rules, *args, **kwargs)
         else:
             return HyperscanRegexHandler(rules, *args, **kwargs)

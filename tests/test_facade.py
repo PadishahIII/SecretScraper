@@ -232,7 +232,7 @@ def test_normal_run(clicker: CliRunner, invoke_args: list[str]):
     print(result)
 
 
-# @pytest.mark.parametrize( TODO: cannot copy file in github actions
+# @pytest.mark.parametrize( # TODO: cannot copy file in github actions
 #     ["invoke_args"],
 #     [
 #         (["--local", "tests/local_tests/local_scan"],),
@@ -250,3 +250,17 @@ def test_normal_run(clicker: CliRunner, invoke_args: list[str]):
 #         raise result.exception
 #     logger.info(result.output)
 #     logger.info(result)
+def test_local_scan(clicker: CliRunner, tmp_path: pathlib.Path, resource_text: str):
+    """Test local file scanner"""
+    (tmp_path / "dir1").mkdir()
+    (tmp_path / "dir1" / "dir2").mkdir()
+    (tmp_path / "dir1" / "dir2" / "resource1.txt").write_text(resource_text)
+    (tmp_path / "empty_dir").mkdir()
+    (tmp_path / "source_text.txt").write_text(resource_text)
+
+    result = clicker.invoke(main, ['--local', str(tmp_path.absolute())])
+    if result.exception is not None:
+        logger.exception(result.exception)
+        raise result.exception
+    logger.info(result.output)
+    logger.info(result)
