@@ -12,6 +12,7 @@ from typing import Set
 from urllib.parse import urlparse
 
 import aiohttp
+import anyio
 import dynaconf
 import httpx
 from aiohttp import ClientResponse
@@ -183,35 +184,37 @@ class Crawler:
     async def validate(self):
         """Validate the status of results that are marked as unknown"""
 
-        # counter = 0
+        counter = 0
 
         async def fetch_task(url_node: URLNode) -> None:
-            # nonlocal counter
+            nonlocal counter
             res = await self.fetch(url_node.url)
             logger.debug(f"Validate {url_node.url}: {res.status_code if res is not None else 'Unknown'}")
             url_node.response_status = str(res.status_code) if res is not None else url_node.response_status
-            # counter -= 1
+            counter -= 1
 
         for base, urls in self.url_dict.items():
             if not str(base.response_status).isdigit():
                 # logger.debug(f"Start to validate {base.url}")
-                # counter += 1
+                counter += 1
                 await self.pool.submit(AsyncTask(fetch_task, base))
             for url in urls:
                 if not str(url.response_status).isdigit():
                     # logger.debug(f"Start to validate {url.url}")
-                    # counter += 1
+                    counter += 1
                     await self.pool.submit(AsyncTask(fetch_task, url))
 
         for base, urls in self.js_dict.items():
             if not str(base.response_status).isdigit():
+                counter += 1
                 await self.pool.submit(AsyncTask(fetch_task, base))
 
             for url in urls:
                 if not str(url.response_status).isdigit():
+                    counter += 1
                     await self.pool.submit(AsyncTask(fetch_task, url))
-        # while counter > 0:
-        while not self.pool.is_finish:
+        while counter > 0:
+        # while not self.pool.is_finish:
             # if self.pool.is_finish:
             #     logger.exception(f"Validate abnormal finish")
             #     break
@@ -376,6 +379,8 @@ class Crawler:
             logger.error(f"Timeout while fetching {url}")
         except httpx.ConnectError as e:
             logger.error(f"Connection error for {url}: {e}")
+        except anyio.ClosedResourceError as e:
+            logger.error(f"Closing resource for {url}: {e}")
         except httpx.InvalidURL as e:
             logger.error(f"Invalid URL for {url}: {e}")
         except httpx.TimeoutException as e:
