@@ -1,5 +1,7 @@
 # # 2024.4.30
 - Optimize url collector, the regex is optimized, should validate the found routes
+- Use aiocache to cache http requests
+- Validate urls after the crawler finish
 # 2024.4.29
 - [ ] Support 3.8~3.11
   - Current support 3.9~3.11

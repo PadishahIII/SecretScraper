@@ -90,6 +90,7 @@ class CrawlerFacade:
                                     blink=True,
                                     )
                 self.crawler.start()
+                self.crawler.start_validate()
                 if self.detail_output:
                     # print_func_colorful(self.print_func,f"Total page: {self.crawler.total_page}")
                     f.write(self.formatter.output_url_hierarchy(self.crawler.url_dict, True))

@@ -11,6 +11,7 @@ import typing
 from typing import Set
 from urllib.parse import urlparse
 
+import aiocache
 import aiohttp
 import anyio
 import dynaconf
@@ -23,6 +24,7 @@ from secretscraper.entity import URL, Secret, URLNode
 from secretscraper.filter import URLFilter
 from secretscraper.handler import Handler
 from secretscraper.urlparser import URLParser
+from aiocache.serializers import PickleSerializer
 
 from .config import settings
 from .exception import CrawlerException
@@ -88,6 +90,9 @@ class Crawler:
             logger.setLevel(logging.DEBUG)
         self.follow_redirects = follow_redirects
         self._validate = validate
+
+        self.cache = aiocache.Cache(aiocache.Cache.MEMORY)
+        self.serializer = PickleSerializer()
 
         self.visited_urls: Set[URLNode] = set()
         self.found_urls: Set[URLNode] = set()  # newly found urls
@@ -170,55 +175,52 @@ class Crawler:
                     f"Total:{self.total_page}, Found:{len(self.found_urls)}, Depth:{url_node.depth}, Visited:{len(self.visited_urls)}, Secrets:{sum([len(secrets) for secrets in self.url_secrets.values()])}"
                 )
             logger.debug(f"Crawler finished.")
-            if self._validate:
-                logger.debug(f"Start validate...")
-                await self.validate()
-
         except asyncio.CancelledError:
+            # raise CrawlerException(f"Crawler cancelled.")
             pass
         except Exception as e:
             raise CrawlerException("Unexpected Exception") from e
         finally:
             await self.clean()
 
+    def start_validate(self):
+        """Start validate"""
+        if not self._validate:
+            return
+        logger.debug(f"Start validate...")
+        self._event_loop = asyncio.new_event_loop()
+        self.client = AsyncClient(verify=False, proxies=self.proxy)
+        try:
+            self._event_loop.run_until_complete(self.validate())
+        except asyncio.CancelledError:
+            pass  # ignore
+
     async def validate(self):
         """Validate the status of results that are marked as unknown"""
 
-        counter = 0
-
         async def fetch_task(url_node: URLNode) -> None:
-            nonlocal counter
             res = await self.fetch(url_node.url)
             logger.debug(f"Validate {url_node.url}: {res.status_code if res is not None else 'Unknown'}")
             url_node.response_status = str(res.status_code) if res is not None else url_node.response_status
-            counter -= 1
+
+        task_list: list[asyncio.Future] = list()
 
         for base, urls in self.url_dict.items():
             if not str(base.response_status).isdigit():
-                # logger.debug(f"Start to validate {base.url}")
-                counter += 1
-                await self.pool.submit(AsyncTask(fetch_task, base))
+                task_list.append(asyncio.create_task(fetch_task(base)))
             for url in urls:
                 if not str(url.response_status).isdigit():
-                    # logger.debug(f"Start to validate {url.url}")
-                    counter += 1
-                    await self.pool.submit(AsyncTask(fetch_task, url))
+                    task_list.append(asyncio.create_task(fetch_task(url)))
 
         for base, urls in self.js_dict.items():
             if not str(base.response_status).isdigit():
-                counter += 1
-                await self.pool.submit(AsyncTask(fetch_task, base))
+                task_list.append(asyncio.create_task(fetch_task(base)))
 
             for url in urls:
                 if not str(url.response_status).isdigit():
-                    counter += 1
-                    await self.pool.submit(AsyncTask(fetch_task, url))
-        while counter > 0:
-        # while not self.pool.is_finish:
-            # if self.pool.is_finish:
-            #     logger.exception(f"Validate abnormal finish")
-            #     break
-            await asyncio.sleep(0.01)
+                    task_list.append(asyncio.create_task(fetch_task(base)))
+        for future in asyncio.as_completed(task_list):
+            await future
 
     def is_evade(self, url: URLNode) -> bool:
         """Check whether url should be evaded"""
@@ -352,10 +354,15 @@ class Crawler:
                     self.url_dict[url_node].add(child)
                 logger.debug(f"New link found: {child.url} from {url_node.url}")
 
+    # @aiocache.cached(ttl=5, key="http", namespace="fetch", serializer=PickleSerializer())
     async def fetch(self, url: str) -> httpx.Response:
         """Wrapper for sending http request
         If exception occurs, return None
         """
+        cached_response = await self.cache.get(url)
+        if cached_response is not None:
+            logger.debug(f"Cache Match: {url}")
+            return self.serializer.loads(cached_response)
         logger.debug(f"Fetching {url}")
         response = None
         try:
@@ -374,6 +381,7 @@ class Crawler:
                 timeout=self.timeout,
             )
             logger.debug(f"Fetch {url}, status: {response.status_code}")
+            await self.cache.set(url, self.serializer.dumps(response), ttl=60)
 
         except TimeoutError:
             logger.error(f"Timeout while fetching {url}")
@@ -390,7 +398,7 @@ class Crawler:
         except KeyboardInterrupt:
             pass  # ignore
         except Exception as e:
-            logger.error(f"Unexpected error: {e.__class__} while fetching {url}")
+            logger.error(f"Unexpected error: {e.__class__}:{e} while fetching {url}")
         return response
 
     async def clean(self):

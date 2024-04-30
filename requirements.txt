@@ -1,3 +1,6 @@
+aiocache==0.12.2 ; python_version >= "3.9" and python_version < "4.0" \
+    --hash=sha256:9b6fa30634ab0bfc3ecc44928a91ff07c6ea16d27d55469636b296ebc6eb5918 \
+    --hash=sha256:b41c9a145b050a5dcbae1599f847db6dd445193b1f3bd172d8e0fe0cb9e96684
 aiohttp==3.9.5 ; python_version >= "3.9" and python_version < "4.0" \
     --hash=sha256:0605cc2c0088fcaae79f01c913a38611ad09ba68ff482402d3410bf59039bfb8 \
     --hash=sha256:0a158704edf0abcac8ac371fbb54044f3270bdbc93e254a82b6c82be1ef08f3c \

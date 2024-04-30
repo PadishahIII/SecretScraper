@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "secretscraper"
-version = "1.3.9.1"
+version = "1.3.9.2"
 description = "SecretScraper is a web scraper tool that can scrape the content through target websites and extract secret information via regular expression."
 readme = "README.md"
 authors = ["Padishah <straystrayer@gmail.com>"]
@@ -26,6 +26,7 @@ bs4 = "^0.0.2"
 aiohttp = "^3.9.4"
 httpx = { extras = ["socks"], version = "^0.27.0" }
 tldextract = "^5.1.2"
+aiocache = "^0.12.2"
 
 [tool.poetry.group.dev.dependencies]
 pylint = "^2.17.4"
