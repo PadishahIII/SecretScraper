@@ -107,6 +107,11 @@ Options:
 ```
 
 ### Advanced Usage
+#### Validate the Status of Links
+Use `--validate` option to check the status of found links, this helps reduce invalid links in the result.
+```bash
+secretscraper -u https://scrapeme.live/shop/ --validate --max-page=10
+```
 
 #### Thorough Crawl
 
@@ -226,8 +231,8 @@ rules:
 ---
 
 # Change Log
-## 2024.4.29 Version 1.3.9
-- Add `--validate` option
+## 2024.4.30 Version 1.3.9
+- Add `--validate` option: Validate urls after the crawler finish, which helps reduce useless links
 - Optimize url collector
 - Optimize built-in regex
 ## 2024.4.29 Version 1.3.8
