@@ -37,7 +37,7 @@ pip install secretscraper
 ```bash
 pip install --upgrade secretscraper
 ```
-**Note that**, since _Secretscraper_ generates a default configuration under the work directory if `settings.yml` is absent, so remember to update the `settings.yml` to the latest version(just copy from [[Customize Configuration]]).
+**Note that**, since _Secretscraper_ generates a default configuration under the work directory if `settings.yml` is absent, so remember to update the `settings.yml` to the latest version(just copy from [Customize Configuration](https://github.com/PadishahIII/SecretScraper?tab=readme-ov-file#customize-configuration)).
 
 ### Basic Usage
 
