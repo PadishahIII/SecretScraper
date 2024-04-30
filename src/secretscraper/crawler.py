@@ -1,6 +1,7 @@
 """The facade interfaces to integrate crawler, filter, and handler"""
 
 import asyncio
+import functools
 import logging
 import queue
 import re
@@ -50,6 +51,7 @@ class Crawler:
         debug: bool = False,
         follow_redirects: bool = False,
         dangerous_paths: typing.List[str] = None,
+        validate: bool = False
     ):
         """
 
@@ -84,6 +86,7 @@ class Crawler:
         if self.debug:
             logger.setLevel(logging.DEBUG)
         self.follow_redirects = follow_redirects
+        self._validate = validate
 
         self.visited_urls: Set[URLNode] = set()
         self.found_urls: Set[URLNode] = set()  # newly found urls
@@ -165,7 +168,11 @@ class Crawler:
                 logger.debug(
                     f"Total:{self.total_page}, Found:{len(self.found_urls)}, Depth:{url_node.depth}, Visited:{len(self.visited_urls)}, Secrets:{sum([len(secrets) for secrets in self.url_secrets.values()])}"
                 )
-            logger.debug(f"Crawler finished")
+            logger.debug(f"Crawler finished.")
+            if self._validate:
+                logger.debug(f"Start validate...")
+                await self.validate()
+
         except asyncio.CancelledError:
             pass
         except Exception as e:
@@ -173,12 +180,49 @@ class Crawler:
         finally:
             await self.clean()
 
+    async def validate(self):
+        """Validate the status of results that are marked as unknown"""
+
+        # counter = 0
+
+        async def fetch_task(url_node: URLNode) -> None:
+            # nonlocal counter
+            res = await self.fetch(url_node.url)
+            logger.debug(f"Validate {url_node.url}: {res.status_code if res is not None else 'Unknown'}")
+            url_node.response_status = str(res.status_code) if res is not None else url_node.response_status
+            # counter -= 1
+
+        for base, urls in self.url_dict.items():
+            if not str(base.response_status).isdigit():
+                # logger.debug(f"Start to validate {base.url}")
+                # counter += 1
+                await self.pool.submit(AsyncTask(fetch_task, base))
+            for url in urls:
+                if not str(url.response_status).isdigit():
+                    # logger.debug(f"Start to validate {url.url}")
+                    # counter += 1
+                    await self.pool.submit(AsyncTask(fetch_task, url))
+
+        for base, urls in self.js_dict.items():
+            if not str(base.response_status).isdigit():
+                await self.pool.submit(AsyncTask(fetch_task, base))
+
+            for url in urls:
+                if not str(url.response_status).isdigit():
+                    await self.pool.submit(AsyncTask(fetch_task, url))
+        # while counter > 0:
+        while not self.pool.is_finish:
+            # if self.pool.is_finish:
+            #     logger.exception(f"Validate abnormal finish")
+            #     break
+            await asyncio.sleep(0.01)
+
     def is_evade(self, url: URLNode) -> bool:
         """Check whether url should be evaded"""
         if self.dangerous_paths is not None:
             path = url.url_object.path
             if len(
-                [path for p in self.dangerous_paths if re.search(f"{p}", path.strip(), re.IGNORECASE)]
+                [path for p in self.dangerous_paths if re.search(f"/?{p}", path.strip(), re.IGNORECASE)]
             ) > 0:
                 return True
         return False
@@ -224,13 +268,8 @@ class Crawler:
             self.url_secrets[url_node] = set(secrets)
         logger.debug(f"Extract secret of number {len(list(secrets))} from {url_node}")
 
-    async def extract_links_and_extend(
-        self, url_node: URLNode, response: httpx.Response, response_text: str
-    ):
-        """Extract links from response and extend the task queue in demand
-        This function only works if the response is text-like, but regardless of whether it is html or not.
-        Extract and extend `url_node` only if `response` is text-like.
-        """
+    def is_extend(self, response: httpx.Response) -> bool:
+        """Determine if extract links from a url node"""
         is_text_like = False
         is_html = False
         try:
@@ -249,9 +288,31 @@ class Crawler:
             else:
                 is_text_like = True
 
-        if not is_text_like or not is_html:  # or not is_html just process html
-            return
-        if response.status_code != 200:  # just process normal response
+        # if not is_text_like or not is_html:  # or not is_html just process html TODO: whether extend or not
+        #     return False
+        # if response.status_code != 200:  # just process normal response
+        #     return False
+        return True
+
+    def is_append_js(self, url_node: URLNode) -> bool:
+        """Determine whether append url to js result or not"""
+        if url_node.url_object.path.endswith(".js") or url_node.url_object.path.endswith(
+            ".js.map") or url_node.url_object.path.__contains__(".js?"):
+            return True
+        return False
+
+    def is_append_url(self, url_node: URLNode) -> bool:
+        """Determine whether append url to url result or not"""
+        return True
+
+    async def extract_links_and_extend(
+        self, url_node: URLNode, response: httpx.Response, response_text: str
+    ):
+        """Extract links from response and extend the task queue in demand
+        This function only works if the response is text-like, but regardless of whether it is html or not.
+        Extract and extend `url_node` only if `response` is text-like.
+        """
+        if not self.is_extend(response):
             return
 
         if self.max_depth <= 0 or url_node.depth + 1 <= self.max_depth:
@@ -263,12 +324,14 @@ class Crawler:
 
         logger.debug(f"Extracting links from {url_node.url}")
         url_children: typing.Set[URLNode] = self.parser.extract_urls(url_node, response_text)
-        if len(url_children) > 0:
-            self.url_dict[url_node] = set()
-        elif is_html and (
-            url_node not in self.url_dict.keys() or self.url_dict[url_node] is None
-        ):
-            self.url_dict[url_node] = set()
+        # self.url_dict[url_node] = set()
+
+        # if len(url_children) > 0:
+        #     self.url_dict[url_node] = set()
+        # elif is_html and (
+        #     url_node not in self.url_dict.keys() or self.url_dict[url_node] is None
+        # ):
+        #     self.url_dict[url_node] = set()
 
         for child in url_children:
             if child is not None and child not in self.visited_urls:
@@ -276,13 +339,13 @@ class Crawler:
                 if is_extending and self.filter.doFilter(child.url_object):
                     self.working_queue.put(child)
                     self.visited_urls.add(child)
-                if child.url_object.path.endswith(
-                    ".js"
-                ) or child.url_object.path.endswith(".js.map"):
+                if self.is_append_js(child):
                     if url_node not in self.js_dict:
                         self.js_dict[url_node] = set()
                     self.js_dict[url_node].add(child)
-                else:
+                elif self.is_append_url(child):
+                    if url_node not in self.url_dict:
+                        self.url_dict[url_node] = set()
                     self.url_dict[url_node].add(child)
                 logger.debug(f"New link found: {child.url} from {url_node.url}")
 

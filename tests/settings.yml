@@ -1,6 +1,6 @@
 verbose: false
 debug: false
-loglevel: warning
+loglevel: critical
 logpath: log
 
 proxy: "" # http://127.0.0.1:7890

@@ -25,6 +25,7 @@ hyperscan = [
 bs4 = "^0.0.2"
 aiohttp = "^3.9.4"
 httpx = { extras = ["socks"], version = "^0.27.0" }
+tldextract = "^5.1.2"
 
 [tool.poetry.group.dev.dependencies]
 pylint = "^2.17.4"

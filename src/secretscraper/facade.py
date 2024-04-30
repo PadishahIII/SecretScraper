@@ -132,6 +132,11 @@ class CrawlerFacade:
 
     def create_crawler(self) -> Crawler:
         """Create a Crawler"""
+        # No validate
+        if self.custom_settings.get("validate", False) is True:
+            validate = True
+        else:
+            validate = False
         # Follow redirects
         if self.custom_settings.get("follow_redirects", False) is True:
             self.settings["follow_redirects"] = True
@@ -286,7 +291,8 @@ class CrawlerFacade:
             timeout=self.settings.get("timeout"),
             debug=self.debug,
             follow_redirects=self.settings["follow_redirects"],
-            dangerous_paths=dangerous_paths
+            dangerous_paths=dangerous_paths,
+            validate=validate
         )
         return crawler
 

@@ -100,6 +100,7 @@ facade_obj = None
               type=click.BOOL)
 @click.option("-u", "--url", help="Target url", type=click.STRING)
 @click.option("--detail", help="Show detailed result", is_flag=True)
+@click.option("--validate", help="Validate the status of found urls", is_flag=True)
 @click.option("-l", "--local", help="Local file or directory, scan local file/directory recursively ",
               type=click.Path(exists=True, file_okay=True, dir_okay=True, path_type=pathlib.Path))
 def main(**options):

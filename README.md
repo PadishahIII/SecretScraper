@@ -201,6 +201,10 @@ rules:
 # TODO
 - [ ] Support headless browser
 - [ ] Add regex doc reference
+- [ ] Fuzz path that are 404
+- [x] Separate subdomains in the result
+- [x] Optimize url collector
+[//]: # (- [ ] Employ jsbeautifier)
 - [x] Generate configuration file
 - [x] Detect dangerous paths and avoid requesting them
 - [x] Support url-finder output format, add `--detail` option
@@ -211,6 +215,9 @@ rules:
 ---
 
 # Change Log
+## 2024.4.29 Version 1.3.9
+- Add `--validate` option
+- Optimize url collector
 ## 2024.4.29 Version 1.3.8
 - Optimize log output
 - Optimize the performance of `--debug` option

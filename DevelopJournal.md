@@ -1,3 +1,5 @@
+# # 2024.4.30
+- Optimize url collector, the regex is optimized, should validate the found routes
 # 2024.4.29
 - [ ] Support 3.8~3.11
   - Current support 3.9~3.11
@@ -22,6 +24,7 @@
 - All crawler test passed
 
 # TODO
+- [ ] Optimize output
 - [x] Log file perform not good
 - [x] Debug option perform not good
 - [x] Remove logpath option

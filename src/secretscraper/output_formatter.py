@@ -7,7 +7,7 @@ import typing
 import click
 
 from .entity import URL, Secret, URLNode
-from .util import Range, to_host_port
+from .util import Range, to_host_port, get_root_domain
 
 
 class Formatter:
@@ -127,14 +127,23 @@ class Formatter:
         """Output the URLs for differenct domains"""
         url_hierarchy = ""
         domain_secrets: typing.Dict[str, typing.List[URLNode]] = dict()
+        root_domains = {get_root_domain(domain) for domain in domains}
         for base, urls in url_dict.items():
-            domain, _ = to_host_port(base.url_object.netloc)
-            if domain not in domains:
-                domain = "Other"
-            if domain not in domain_secrets:
-                domain_secrets[domain] = list()
-            domain_secrets[domain].extend(list(urls))
-        for domain, urls in domain_secrets.items():
+            l = list(urls)
+            l.append(base)
+            for url in l:
+                domain, _ = to_host_port(url.url_object.netloc)
+                domain = get_root_domain(domain)
+                if domain not in root_domains:
+                    domain = "Other"
+                if domain not in domain_secrets:
+                    domain_secrets[domain] = list()
+                domain_secrets[domain].append(url)
+        keys = list(domain_secrets.keys())
+        keys.remove("Other")
+        keys.append("Other")
+        for domain in keys:
+            urls = domain_secrets[domain]
             if urls is None or len(urls) == 0:
                 continue
             url_set = {

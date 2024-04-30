@@ -4,6 +4,7 @@ import re
 import typing
 from collections import namedtuple
 from urllib.parse import urlparse
+import tldextract
 
 # from dynaconf import LazySettings
 
@@ -37,9 +38,9 @@ def read_rules_from_setting(settings) -> typing.Dict[str, str]:
 
 def is_static_resource(path: str) -> bool:
     """Check whether a path is a static resource"""
-    exts = ['.png', '.jpg', '.jpeg', '.gif', '.css', '.ico', ".dtd", '.svg']
+    exts = {'.png', '.jpg', '.jpeg', '.gif', '.css', '.ico', ".dtd", '.svg', '.scss', '.vue', '.ts'}
     for ext in exts:
-        if path.endswith(ext):
+        if path.endswith(ext) or path.__contains__(ext + "?"):
             return True
     return False
 
@@ -54,6 +55,13 @@ def to_host_port(netloc: str) -> typing.Tuple[str, str]:
     return '', ''
 
 
+def get_root_domain(host: str) -> str:
+    """Get the root domain"""
+    domain = tldextract.extract(host)
+
+    return domain.domain + "." + domain.suffix
+
+
 def sanitize_url(url: str) -> str:
     """Remove invalid characters in url
     Return emtpy string if url is invalid
@@ -66,6 +74,13 @@ def sanitize_url(url: str) -> str:
     m = re.search("[a-zA-Z0-9]+", url)
     if m is None:
         return ""
+    m = re.search(
+        "\\<|\\>|\\{|\\}|\\[|\\]|\\||\\^|;|/node_modules/|www\\.w3\\.org|example\\.com|jquery[-\\.\\w]*?\\.js|\\.src|\\.replace|\\.url|\\.att|\\.href|location\\.href|javascript:|location:|application/x-www-form-urlencoded|\\.createObject|:location|\\.path|\\*#__PURE__\\*|\\*\\$0\\*|\\n",
+        url
+    )
+    if m is not None:
+        return ""
+
     if url.strip().startswith("javascript"):
         return ""
     try:

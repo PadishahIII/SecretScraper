@@ -1,5 +1,5 @@
 """Extract URL nodes in HTML page."""
-
+import typing
 from typing import Set
 from urllib.parse import ParseResult, urlparse
 
@@ -57,9 +57,9 @@ class URLParser:
             if href is not None:
                 url_obj = urlparse(href)
 
-                if is_static_resource(url_obj.path):
+                if is_static_resource(url_obj.path): # remove static resource
                     continue
-                href = sanitize_url(href)
+                href = sanitize_url(href)  # remove dirty url
                 if len(href) == 0:
                     continue
                 if (
