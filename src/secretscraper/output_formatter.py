@@ -140,8 +140,9 @@ class Formatter:
                     domain_secrets[domain] = list()
                 domain_secrets[domain].append(url)
         keys = list(domain_secrets.keys())
-        keys.remove("Other")
-        keys.append("Other")
+        if "Other" in keys:
+            keys.remove("Other")
+            keys.append("Other")
         for domain in keys:
             urls = domain_secrets[domain]
             if urls is None or len(urls) == 0:
