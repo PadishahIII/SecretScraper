@@ -19,7 +19,7 @@ Phone: 13273487666
 Phone: 13273487666
 
 URL as a value: /login?redirect=http://xxxx)
-Email: 3333333qqqxxxx@qq.com
+Email: "3333333qqqxxxx@qq.com"
 Link: https://example.link.com/xxx
 Internal IP: 10.0.0.1
 Internal IP: 192.168.1.1.1.1

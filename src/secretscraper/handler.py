@@ -25,34 +25,39 @@ class Handler(Protocol):
 class ReRegexHandler(Handler):
     """ Regex handler using the `re` module, simple but have lowest performance."""
 
-    def __init__(self, rules: typing.Dict[str, str], flags: int = 0):
+    def __init__(self, rules: typing.Dict[str, str], flags: int = 0, use_groups: bool = False) -> None:
         """
 
         :param rules: rules dictionary with keys indicating type and values indicating the regex
+        :param use_groups: extract content from regex groups but not the whole match
         """
         self.types = list(rules.keys())
         regexes = list(rules.values())
         self.regexes: typing.List[re.Pattern] = list()
         for regex in regexes:
             self.regexes.append(re.compile(regex, flags=flags | re.IGNORECASE))
+        self.use_groups = use_groups
 
     def handle(self, text: str) -> typing.Iterable[Secret]:
         """Extract secret data"""
         result_list: typing.List[Secret] = list()
         for index, regex in enumerate(self.regexes):
-            # match = regex.search(text)
-            # if match is not None:
-            #     secret_data = match.group(0)
-            #     secret_type = self.types[index]
-            #     secret = Secret(type=secret_type, data=secret_data)
-            #     result_list.append(secret)
-            matches = regex.findall(text)
-            for match in matches:
+            if self.use_groups:
+                matches = regex.findall(text)
+                for match in matches:
+                    if match is not None:
+                        secret_data = match if type(match) is not tuple else match[0]
+                        secret_type = self.types[index]
+                        secret = Secret(type=secret_type, data=secret_data)
+                        result_list.append(secret)
+            else:
+                match = regex.search(text)
                 if match is not None:
-                    secret_data = match if type(match) is not tuple else match[0]
+                    secret_data = match.group(0)
                     secret_type = self.types[index]
                     secret = Secret(type=secret_type, data=secret_data)
                     result_list.append(secret)
+
         return result_list
 
 

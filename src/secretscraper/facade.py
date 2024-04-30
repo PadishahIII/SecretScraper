@@ -266,7 +266,7 @@ class CrawlerFacade:
         rules: typing.List[str] = self.settings.get("urlFind")
         rules.extend(self.settings.get("jsFind"))
         rules_dict = {f"urlFinder_{i}": rule for i, rule in enumerate(rules)}
-        parser = RegexURLParser(get_regex_handler(rules_dict, type_="regex"))
+        parser = RegexURLParser(get_regex_handler(rules_dict, type_="regex", use_groups=True))
 
         # Detailed output
         if self.custom_settings.get("detail", False) is True:

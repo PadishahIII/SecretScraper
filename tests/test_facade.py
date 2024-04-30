@@ -222,7 +222,7 @@ def test_crawler_facade_update_crawler(
     # [(["-u", "https://www.baidu.com/", "--max-page=10","-F"],)],  # "-x", "http://127.0.0.1:8080",
     # [(["-u", "http://qyyx.dqwjj.cn:29200/IDCAS_dq/Scripts/lib/layui/layui.all.js", "--detail"],)],
     # [(["-u", "http://qyyx.dqwjj.cn:29200/IDCAS_dq", "--validate", "--max-page","10","--debug"],)],
-    # [(["-u", "https://www.baidu.com", "--validate", "--max-page", "2", "--debug"],)],
+    # [(["-u", "https://www.baidu.com",  "--max-page", "2", "--debug"],)],
     # [(["-l", "/Users/padishah/Downloads/layui.js", "--detail"],)],
     # [(["--version"],)],
     # [(["-u", "https://gthnb.zjzwfw.gov.cn ", "-x", "http://127.0.0.1:8080", "-H"],)],

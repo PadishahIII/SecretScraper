@@ -218,6 +218,7 @@ rules:
 ## 2024.4.29 Version 1.3.9
 - Add `--validate` option
 - Optimize url collector
+- Optimize built-in regex
 ## 2024.4.29 Version 1.3.8
 - Optimize log output
 - Optimize the performance of `--debug` option
