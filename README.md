@@ -21,7 +21,7 @@ data via regular expression.
 - Flexible configuration in yaml format
 
 ## Prerequisite
-- Platform: Test on MaxOS, Ubuntu and Windows.
+- Platform: Test on MacOS, Ubuntu and Windows.
 - Python Version >= 3.9
 
 ## Usage
