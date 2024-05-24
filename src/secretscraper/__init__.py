@@ -1,3 +1,3 @@
 """SecretScraper"""
 
-__version__ = "1.3.9.3"
+__version__ = "1.3.9.4"

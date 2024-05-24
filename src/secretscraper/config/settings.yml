@@ -2,6 +2,7 @@ verbose: false
 debug: false
 loglevel: critical
 logpath: log
+handler_type: regex
 
 proxy: "" # http://127.0.0.1:7890
 max_depth: 1 # 0 for no limit

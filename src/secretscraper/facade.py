@@ -260,7 +260,13 @@ class CrawlerFacade:
 
         # Read rules from config file
         rules: typing.Dict[str, str] = read_rules_from_setting(self.settings)
-        handler = get_regex_handler(rules)
+        handler_type = self.settings.get("handler_type", "regex")
+        if handler_type == "hyperscan":
+            handler = get_regex_handler(rules)
+            print_config(f"Using regex handler: Hyperscan")
+        else:
+            handler = get_regex_handler(rules, type_="regex", use_groups=True)
+            print_config(f"Using regex handler: Re")
 
         # Read url/js regex
         rules: typing.List[str] = self.settings.get("urlFind")
