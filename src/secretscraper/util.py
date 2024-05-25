@@ -3,8 +3,12 @@
 import re
 import typing
 from collections import namedtuple
+from pathlib import Path
 from urllib.parse import urlparse
+from threading import Thread
+import requests
 import tldextract
+from bs4 import BeautifulSoup
 
 # from dynaconf import LazySettings
 
@@ -99,3 +103,37 @@ def is_hyperscan() -> bool:
         return True
     except ImportError:
         return False
+
+
+def get_response_title(response: requests.Response) -> str:
+    """Get the response title"""
+    bs = BeautifulSoup(response.text, "html.parser")
+    titles = list()
+    for t in bs.find_all('title'):
+        text = t.get_text()
+        titles.append(text.replace("\n", " ").replace("\r", " ").strip())
+    return "|".join(titles)
+
+
+import http.server
+
+
+def start_local_test_http_server(host: str, port: int, server_dir: Path = None) -> tuple[
+    Thread, http.server.HTTPServer]:
+    """Start local test server"""
+
+    if server_dir is None:
+        DIR = str(
+            Path(__file__).parent.parent.parent.joinpath("tests").joinpath("resources").joinpath(
+                "local_server").absolute())
+    else:
+        DIR = str(server_dir.absolute())
+
+    class Handler(http.server.SimpleHTTPRequestHandler):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, directory=DIR, **kwargs)
+
+    httpd = http.server.HTTPServer((host, port), Handler)
+    thread = Thread(target=httpd.serve_forever)
+    thread.start()
+    return thread, httpd

@@ -91,7 +91,7 @@ Options:
                                2(thorough) for max_depth=2, default 1
   --max-page INTEGER           Max page number to crawl, default 100000
   --max-depth INTEGER          Max depth to crawl, default 1
-  -o, --outfile FILE           Output result to specified file
+  -o, --outfile FILE           Output result to specified file in csv format
   -s, --status TEXT            Filter response status to display, seperated by
                                commas, e.g. 200,300-400
   -x, --proxy TEXT             Set proxy, e.g. http://127.0.0.1:8080,
@@ -122,9 +122,9 @@ to `--max-depth 2`. By default the normal mode `-m 1` is adopted with max depth 
 secretscraper -u https://scrapeme.live/shop/ -m 2
 ```
 
-#### Write Results to File
+#### Write Results to Csv File
 ```bash
-secretscraper -u https://scrapeme.live/shop/ -o result.log
+secretscraper -u https://scrapeme.live/shop/ -o result.csv
 ```
 
 #### Hide Regex Result
@@ -138,6 +138,15 @@ secretscraper -u https://scrapeme.live/shop/ -H
 secretscraper -l <dir or file>
 ```
 
+#### Switch to hyperscan
+I have implemented the regex matching functionality with both `hyperscan` and `re` module, `re` module is used as default, if you purse higher performance, you can switch to `hyperscan` by changing the `handler_type` to `hyperscan` in `settings.yml`.
+
+There are some pitfalls of `hyperscan` which you have to take caution to use it:
+1. not support regex group: you can not extract content by parentheses.
+2. different syntax from `re`
+
+You'd better write regex separately for the two regex engine.
+
 #### Customize Configuration
 The built-in config is shown as below. You can assign custom configuration via `-i settings.yml`.
 ```yaml
@@ -145,6 +154,7 @@ verbose: false
 debug: false
 loglevel: critical
 logpath: log
+handler_type: re
 
 proxy: "" # http://127.0.0.1:7890
 max_depth: 1 # 0 for no limit
@@ -231,6 +241,10 @@ rules:
 ---
 
 # Change Log
+## 2024.5.25 Version 1.4
+- Support csv output
+- Set `re` module as regex engine by default
+- Support to select regex engine by configuration `handler_type`
 ## 2024.4.30 Version 1.3.9
 - Add `--validate` option: Validate urls after the crawler finish, which helps reduce useless links
 - Optimize url collector

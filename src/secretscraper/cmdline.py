@@ -1,10 +1,11 @@
 """Command line"""
-
+import dataclasses
 import functools
 import logging
 import pathlib
 
 import click
+import dynaconf
 from click import Context
 from dynaconf.base import Settings
 
@@ -15,6 +16,13 @@ from secretscraper.facade import CrawlerFacade, FileScannerFacade
 
 facade_settings = settings  # for unit test
 facade_obj = None
+
+
+@dataclasses.dataclass
+class ExternalEntry:
+    """Expose objects for external library"""
+    facade_obj: CrawlerFacade
+    facade_settings: dynaconf.Dynaconf
 
 
 # @click.group(invoke_without_command=True)
@@ -78,7 +86,7 @@ facade_obj = None
 @click.option(
     "-o",
     "--outfile",
-    help="Output result to specified file",
+    help="Output result to specified file in csv format",
     type=click.Path(
         exists=False, file_okay=True, dir_okay=False, path_type=pathlib.Path
     ),
@@ -105,6 +113,10 @@ facade_obj = None
               type=click.Path(exists=True, file_okay=True, dir_okay=True, path_type=pathlib.Path))
 def main(**options):
     """Main commands"""
+    start(options)
+
+
+def start(options: dict):
     if options["version"]:
         click.echo(__version__)
         exit(0)
@@ -138,7 +150,9 @@ def main(**options):
         else:
             facade = CrawlerFacade(settings, options_dict, print_func=print_func)
         facade_obj = facade
+        ExternalEntry.facade_obj = facade
         facade_settings = facade.settings
+        ExternalEntry.facade_settings = facade_settings
     except FacadeException as e:
         click.echo(f"Error: {e}")
         exit(1)
@@ -157,6 +171,7 @@ def generate_configuration(file: pathlib.Path):
 debug: false
 loglevel: critical
 logpath: log
+handler_type: re
 
 proxy: "" # http://127.0.0.1:7890
 max_depth: 1 # 0 for no limit

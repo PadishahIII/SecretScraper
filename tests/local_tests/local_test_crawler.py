@@ -2,6 +2,7 @@
 
 import functools
 import logging
+import typing
 
 import aiohttp
 import pytest

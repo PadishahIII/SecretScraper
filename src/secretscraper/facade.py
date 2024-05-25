@@ -30,11 +30,12 @@ warnings.filterwarnings("ignore")  # ignore all warnings
 
 def print_func(f: typing.IO, func: typing.Callable, content: str, **kwargs) -> None:
     func(content, **kwargs)
-    func(content, file=f, **kwargs)
+    if f is not None:
+        func(content, file=f, **kwargs)
 
 
 def print_func_colorful(
-    f: typing.IO,
+    f: typing.Optional[typing.IO],
     func: typing.Callable,
     content: str,
     fg: str = None,
@@ -70,7 +71,7 @@ class CrawlerFacade:
         self.custom_settings = custom_settings
         self.formatter = Formatter()
         self.hide_regex: bool = False
-        self.outfile = pathlib.Path(__file__).parent / "crawler.log"
+        self.outfile: typing.Optional[pathlib.Path] = None  # pathlib.Path(__file__).parent / "crawler.log"
         self.print_func = print_func
         self.debug: bool = False
         self.follow_redirects: bool = False
@@ -79,57 +80,62 @@ class CrawlerFacade:
 
     def start(self):
         """Start the crawler and output"""
-        with self.outfile.open("w") as f:
-            try:
+        # with self.outfile.open("w") as f:
+        f = None
+        try:
 
-                # print_func(f"Starting crawler...")
-                print_func_colorful(f,
-                                    self.print_func,
-                                    f"Target URLs: {', '.join(self.crawler.start_urls)}",
-                                    bold=True,
-                                    blink=True,
-                                    )
-                self.crawler.start()
-                self.crawler.start_validate()
-                if self.detail_output:
-                    # print_func_colorful(self.print_func,f"Total page: {self.crawler.total_page}")
-                    f.write(self.formatter.output_url_hierarchy(self.crawler.url_dict, True))
+            # print_func(f"Starting crawler...")
+            print_func_colorful(f,
+                                self.print_func,
+                                f"Target URLs: {', '.join(self.crawler.start_urls)}",
+                                bold=True,
+                                blink=True,
+                                )
+            self.crawler.start()
+            self.crawler.start_validate()
+            if self.detail_output:
+                # print_func_colorful(self.print_func,f"Total page: {self.crawler.total_page}")
+                self.formatter.output_url_hierarchy(self.crawler.url_dict, True)
 
-                    if not self.hide_regex:
-                        print_func_colorful(f, self.print_func,
-                                            f"{self.formatter.output_secrets(self.crawler.url_secrets)}"
-                                            )
-                    print_func_colorful(f, self.print_func, f"{self.formatter.output_js(self.crawler.js_dict)}")
-                    f.write(self.formatter.output_found_domains(list(self.crawler.found_urls), True))
-                else:
-                    # tidy output
-                    # URLs per domain
-                    domains = set()
-                    for url in self.crawler.start_urls:
-                        try:
-                            obj = urlparse(url)
-                            domain, _ = to_host_port(obj.netloc)
-                            if len(domain) > 0:
-                                domains.add(domain.strip())
-                        except:
-                            pass
-                    f.write(self.formatter.output_url_per_domain(domains, self.crawler.url_dict))
-                    # JS per domain
-                    f.write(self.formatter.output_url_per_domain(domains, self.crawler.js_dict, "JS"))
-                    # Domains
-                    f.write(self.formatter.output_found_domains(list(self.crawler.found_urls), True))
-                    # Secrets
-                    if not self.hide_regex:
-                        print_func_colorful(f, self.print_func,
-                                            f"{self.formatter.output_secrets(self.crawler.url_secrets)}"
-                                            )
-            except KeyboardInterrupt:
-                self.print_func("\nExiting...")
-                self.crawler.close_all()
-            except Exception as e:
-                self.print_func(f"Unexpected error: {e}.\nExiting...")
-                self.crawler.close_all()
-                # raise FacadeException from e
+                if not self.hide_regex:
+                    print_func_colorful(f, self.print_func,
+                                        f"{self.formatter.output_secrets(self.crawler.url_secrets)}"
+                                        )
+                print_func_colorful(f, self.print_func, f"{self.formatter.output_js(self.crawler.js_dict)}")
+                self.formatter.output_found_domains(list(self.crawler.found_urls), True)
+            else:
+                # tidy output
+                # URLs per domain
+                domains = set()
+                for url in self.crawler.start_urls:
+                    try:
+                        obj = urlparse(url)
+                        domain, _ = to_host_port(obj.netloc)
+                        if len(domain) > 0:
+                            domains.add(domain.strip())
+                    except:
+                        pass
+                self.formatter.output_url_per_domain(domains, self.crawler.url_dict)
+                # JS per domain
+                self.formatter.output_url_per_domain(domains, self.crawler.js_dict, "JS")
+                # Domains
+                self.formatter.output_found_domains(list(self.crawler.found_urls), True)
+                # Secrets
+                if not self.hide_regex:
+                    print_func_colorful(f, self.print_func,
+                                        f"{self.formatter.output_secrets(self.crawler.url_secrets)}"
+                                        )
+            if self.outfile is not None:
+                self.formatter.output_csv(self.outfile, self.crawler.url_dict, self.crawler.url_secrets)
+                print_func_colorful(None, self.print_func, f"Save result to csv file {self.outfile.name}", fg="green",
+                                    bold=True)
+        except KeyboardInterrupt:
+            self.print_func("\nExiting...")
+            self.crawler.close_all()
+        except Exception as e:
+            self.print_func(f"Unexpected error: {e}.\nExiting...")
+            self.crawler.close_all()
+            # raise FacadeException from e
 
     def create_crawler(self) -> Crawler:
         """Create a Crawler"""
@@ -260,7 +266,7 @@ class CrawlerFacade:
 
         # Read rules from config file
         rules: typing.Dict[str, str] = read_rules_from_setting(self.settings)
-        handler_type = self.settings.get("handler_type", "regex")
+        handler_type = self.settings.get("handler_type", "re")
         if handler_type == "hyperscan":
             handler = get_regex_handler(rules)
             print_config(f"Using regex handler: Hyperscan")

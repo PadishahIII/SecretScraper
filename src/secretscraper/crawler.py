@@ -28,7 +28,7 @@ from aiocache.serializers import PickleSerializer
 
 from .config import settings
 from .exception import CrawlerException
-from .util import Range
+from .util import Range, get_response_title
 
 logger = logging.getLogger(__name__)
 
@@ -244,7 +244,12 @@ class Crawler:
         response = await self.fetch(url_node.url)
         if response is not None:  # and response.status == 200
             url_node.response_status = str(response.status_code)
-
+            url_node.title = get_response_title(response)
+            try:
+                url_node.content_length = int(response.headers.get('content-length'))
+            except Exception:
+                pass
+            url_node.content_type = response.headers.get('content-type')
             response_text: str = response.text
             # try:
             #     response_text: str = await response.text(

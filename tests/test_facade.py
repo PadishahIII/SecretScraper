@@ -231,13 +231,18 @@ def test_crawler_facade_update_crawler(
 
 )
 def test_normal_run(clicker: CliRunner, invoke_args: typing.List[str]):
-    result = clicker.invoke(main, invoke_args)
-    if result.exception is not None:
-        logger.exception(result.exception)
-        raise result.exception
-    with click.open_file("1.log", "w") as f:
-        click.echo(result.output, file=f)
-    print(result)
+    from secretscraper.util import start_local_test_http_server
+    thread, httpd = start_local_test_http_server("127.0.0.1", 8888)
+    try:
+        result = clicker.invoke(main, invoke_args)
+        if result.exception is not None:
+            logger.exception(result.exception)
+            raise result.exception
+        with click.open_file("1.log", "w") as f:
+            click.echo(result.output, file=f)
+        print(result)
+    finally:
+        httpd.shutdown()
 
 
 # @pytest.mark.parametrize( # TODO: cannot copy file in github actions

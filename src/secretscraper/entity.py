@@ -23,6 +23,9 @@ class URLNode:
     response_status: str = field(default="Unknown", hash=False, compare=False)
     depth: int = field(default=0, hash=False, compare=False)
     parent: typing.Optional["URLNode"] = field(default=None, hash=False, compare=False)
+    content_length: int = field(hash=False, compare=False, default=-1)
+    content_type: str = field(hash=False, compare=False, default="")
+    title: str = field(hash=False, compare=False, default="")
 
     def __post_init__(self):
         if self.parent is not None and self.depth <= self.parent.depth:

@@ -46,6 +46,8 @@ class Formatter:
             return click.style(status, fg="red")
 
     def format_normal_result(self, content: str) -> str:
+        if content == "":
+            return ""
         return click.style(content, fg="bright_blue")
 
     def filter(self, url: URLNode) -> bool:
@@ -66,6 +68,13 @@ class Formatter:
             except ValueError:
                 return False  # default discard
         return True
+
+    def format_single_url(self, url: URLNode) -> str:
+        return self.format_normal_result(f"{str(url.url)}") \
+            + " [" \
+            + self.format_colorful_status(url.response_status) \
+            + "]" \
+            + f" [Content-Length: {self.format_normal_result(str(url.content_length)) if url.content_length > 0 else ''}] [Content-Type: {self.format_normal_result(url.content_type)}] [Title: {self.format_normal_result(url.title)}]"
 
     def output_found_domains(
         self, found_urls: typing.Iterable[URLNode], is_print: bool = False
@@ -93,7 +102,7 @@ class Formatter:
             url_hierarchy = ""
             for base, urls in url_dict.items():
                 url_set = {
-                    f"{str(url.url)} [{str(url.response_status)}]"
+                    self.format_single_url(url)
                     for url in urls
                     if self.filter(url)
                 }
@@ -104,10 +113,7 @@ class Formatter:
             url_hierarchy = ""
             for base, urls in url_dict.items():
                 url_set = {
-                    self.format_normal_result(f"{str(url.url)}")
-                    + " ["
-                    + self.format_colorful_status(url.response_status)
-                    + "]"
+                    self.format_single_url(url)
                     for url in urls
                     if self.filter(url)
                 }
@@ -148,10 +154,7 @@ class Formatter:
             if urls is None or len(urls) == 0:
                 continue
             url_set = {
-                self.format_normal_result(f"{str(url.url)}")
-                + " ["
-                + self.format_colorful_status(url.response_status)
-                + "]"
+                self.format_single_url(url)
                 for url in urls
                 if self.filter(url)
             }
@@ -227,3 +230,26 @@ class Formatter:
                 result += s
                 click.echo(s)
         return result
+
+    def output_csv(
+        self,
+        outfile: pathlib.Path,
+        url_dict: typing.Dict[URLNode, typing.Iterable[URLNode]],
+        url_secrets: typing.Dict[URLNode, typing.Iterable[Secret]],
+
+    ) -> None:
+        import csv
+        with outfile.open("w", encoding='utf-8', errors='replace') as f:
+            writer = csv.writer(f)
+            writer.writerow(("URL", "Title", "Response Code", "Content Length", "Content Type", "Secrets"))
+            url_nodes: typing.Set[URLNode] = set()
+            for key, urls in url_dict.items():
+                url_nodes.add(key)
+                for url in urls:
+                    url_nodes.add(url)
+            for url in url_nodes:
+                row = [url.url, url.title, url.response_status, url.content_length, url.content_type]
+                if url in url_secrets:
+                    secrets = [f"{secret.type}: {secret.data}" for secret in url_secrets[url]]
+                    row += ['\n'.join(secrets)]
+                writer.writerow(row)
