@@ -128,6 +128,16 @@ secretscraper -u https://scrapeme.live/shop/ -m 2
 secretscraper -u https://scrapeme.live/shop/ -o result.csv
 ```
 
+#### Domain White/Black List
+Support wildcard(*), white list:
+```bash
+secretscraper -u https://scrapeme.live/shop/ -d *scrapeme*
+```
+Black list:
+```bash
+secretscraper -u https://scrapeme.live/shop/ -D *.gov
+```
+
 #### Hide Regex Result
 Use `-H` option to hide regex-matching results. Only found links will be displayed.
 ```bash
