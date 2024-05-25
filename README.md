@@ -62,9 +62,10 @@ http://scrapeme.live/4
 http://scrapeme.live/1
 ```
 Sample output:
-<img width="1125" alt="image" src="https://github.com/PadishahIII/SecretScraper/assets/83501709/00dd2053-7b9a-4ef3-a2b2-8c168e8ec0ee">
+<img width="971" alt="image" src="https://github.com/PadishahIII/SecretScraper/assets/83501709/e2f12441-a1ec-4fea-933e-17cdc3e31583">
 
-<img width="990" alt="image" src="https://github.com/PadishahIII/SecretScraper/assets/83501709/fa733a3f-8a8a-4d79-814f-a4c115d1e056">
+<img width="904" alt="image" src="https://github.com/PadishahIII/SecretScraper/assets/83501709/d19faa0e-3ab2-452b-9a82-95e6607d54c6">
+
 
 
 All supported options:
