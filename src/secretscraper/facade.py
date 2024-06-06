@@ -364,7 +364,13 @@ class FileScannerFacade:
 
         # Read rules from config file
         rules: typing.Dict[str, str] = read_rules_from_setting(self.settings)
-        handler = get_regex_handler(rules)
+        handler_type = self.settings.get("handler_type", "re")
+        if handler_type == "hyperscan":
+            handler = get_regex_handler(rules)
+            print_config(f"Using regex handler: Hyperscan")
+        else:
+            handler = get_regex_handler(rules, type_="regex", use_groups=True)
+            print_config(f"Using regex handler: Re")
 
         # Get all files from directory
         base: typing.Optional[pathlib.Path] = self.custom_settings.get('local', None)

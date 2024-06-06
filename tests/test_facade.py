@@ -242,7 +242,8 @@ def test_normal_run(clicker: CliRunner, invoke_args: typing.List[str]):
             click.echo(result.output, file=f)
         print(result)
     finally:
-        httpd.shutdown()
+        if httpd is not None:
+            httpd.shutdown()
 
 
 # @pytest.mark.parametrize( # TODO: cannot copy file in github actions

@@ -1,6 +1,5 @@
 from secretscraper.util import read_rules_from_setting, start_local_test_http_server
 import requests
-from signal import pthread_kill, SIGKILL
 
 from . import settings
 
@@ -18,5 +17,6 @@ def test_start_local_test_http_server():
     except AssertionError as e:
         raise e
     finally:
-        httpd.shutdown()
-        print(1)
+        if httpd is not None:
+            httpd.shutdown()
+        # print(1)

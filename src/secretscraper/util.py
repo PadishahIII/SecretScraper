@@ -1,6 +1,7 @@
 """Common utility functions."""
-
+import os
 import re
+import sys
 import typing
 from collections import namedtuple
 from pathlib import Path
@@ -120,7 +121,11 @@ import http.server
 
 def start_local_test_http_server(host: str, port: int, server_dir: Path = None) -> tuple[
     Thread, http.server.HTTPServer]:
-    """Start local test server"""
+    """Start local test server
+
+    """
+    # if sys.platform.startswith("win"):
+    #     return None, None
 
     if server_dir is None:
         DIR = str(
@@ -133,7 +138,10 @@ def start_local_test_http_server(host: str, port: int, server_dir: Path = None) 
         def __init__(self, *args, **kwargs):
             super().__init__(*args, directory=DIR, **kwargs)
 
-    httpd = http.server.HTTPServer((host, port), Handler)
-    thread = Thread(target=httpd.serve_forever)
-    thread.start()
-    return thread, httpd
+    try:
+        httpd = http.server.HTTPServer((host, port), Handler)
+        thread = Thread(target=httpd.serve_forever)
+        thread.start()
+        return thread, httpd
+    except OSError:
+        return None, None
