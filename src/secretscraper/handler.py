@@ -176,9 +176,9 @@ def get_regex_handler(rules: typing.Dict[str, str], type_: str = "", *args, **kw
         else:
             return HyperscanRegexHandler(rules, *args, **kwargs)
     else:
-        if type == "regex":
+        if type_ == "regex":
             return ReRegexHandler(rules, *args, **kwargs)
-        elif type == "hyperscan":
+        elif type_ == "hyperscan":
             return HyperscanRegexHandler(rules, *args, **kwargs)
         else:
             return ReRegexHandler(rules, *args, **kwargs)
