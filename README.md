@@ -17,6 +17,7 @@ data via regular expression.
 - Support multiple targets, input target URLs from a file
 - Support local file scan
 - Scalable customization: header, proxy, timeout, cookie, scrape depth, follow redirect, etc.
+- Built-in per-domain rate limiting and HTTP connection pool limits
 - Built-in regex to search for sensitive information
 - Flexible configuration in yaml format
 
@@ -38,6 +39,13 @@ pip install secretscraper
 pip install --upgrade secretscraper
 ```
 **Note that**, since _Secretscraper_ generates a default configuration under the work directory if `settings.yml` is absent, so remember to update the `settings.yml` to the latest version(just copy from [Customize Configuration](https://github.com/PadishahIII/SecretScraper?tab=readme-ov-file#customize-configuration)).
+
+### Development
+
+```bash
+uv sync
+uv run tox
+```
 
 ### Basic Usage
 
@@ -92,6 +100,14 @@ Options:
                                2(thorough) for max_depth=2, default 1
   --max-page INTEGER           Max page number to crawl, default 100000
   --max-depth INTEGER          Max depth to crawl, default 1
+  --max-connections INTEGER    Max total HTTP connections
+  --max-keepalive-connections INTEGER
+                               Max keep-alive HTTP connections
+  --max-concurrent-per-domain INTEGER
+                               Max simultaneous requests per domain
+  --min-request-interval FLOAT
+                               Minimum seconds between requests to the same
+                               domain
   -o, --outfile FILE           Output result to specified file in csv format
   -s, --status TEXT            Filter response status to display, seperated by
                                commas, e.g. 200,300-400
@@ -126,6 +142,16 @@ secretscraper -u https://scrapeme.live/shop/ -m 2
 #### Write Results to Csv File
 ```bash
 secretscraper -u https://scrapeme.live/shop/ -o result.csv
+```
+
+#### Tune Crawl Rate Limits
+Use these options to reduce pressure on a target domain and cap local socket usage:
+```bash
+secretscraper -u https://scrapeme.live/shop/ \
+  --max-connections 100 \
+  --max-keepalive-connections 50 \
+  --max-concurrent-per-domain 5 \
+  --min-request-interval 0.2
 ```
 
 #### Domain White/Black List
@@ -173,6 +199,10 @@ max_page_num: 1000 # 0 for no limit
 timeout: 5
 follow_redirects: true
 workers_num: 1000
+max_connections: 100 # total HTTP connection pool size
+max_keepalive_connections: 50 # keep-alive connections retained in the pool
+max_concurrent_per_domain: 5 # simultaneous requests allowed per domain
+min_request_interval: 0.2 # seconds between requests to the same domain
 headers:
   Accept: "*/*"
   Cookie: ""

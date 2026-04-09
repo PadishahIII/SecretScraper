@@ -28,6 +28,7 @@ from aiocache.serializers import PickleSerializer
 
 from .config import settings
 from .exception import CrawlerException
+from .rate_limiter import DomainRateLimiter
 from .util import Range, get_response_title
 
 logger = logging.getLogger(__name__)
@@ -51,6 +52,10 @@ class Crawler:
         headers: dict = None,
         verbose: bool = False,
         timeout: float = 5,
+        max_connections: int = 100,
+        max_keepalive_connections: int = 50,
+        max_concurrent_per_domain: int = 5,
+        min_request_interval: float = 0.2,
         debug: bool = False,
         follow_redirects: bool = False,
         dangerous_paths: typing.List[str] = None,
@@ -70,8 +75,17 @@ class Crawler:
         :param proxy: http proxy
         :param verbose: whether to print exception detail
         :param timeout: timeout for aiohttp request
+        :param max_connections: max number of total httpx connections
+        :param max_keepalive_connections: max number of keep-alive httpx connections
+        :param max_concurrent_per_domain: max simultaneous requests per domain
+        :param min_request_interval: min seconds between requests to one domain
         :param dangerous_paths: dangerous paths to evade
         """
+        if max_connections < 1:
+            raise ValueError("max_connections must be at least 1")
+        if max_keepalive_connections < 0:
+            raise ValueError("max_keepalive_connections must be non-negative")
+
         self.dangerous_paths = dangerous_paths
         self.proxy = proxy
         self.start_urls = start_urls
@@ -84,6 +98,10 @@ class Crawler:
         self.num_workers = num_workers
         self.verbose = verbose
         self.timeout = timeout
+        self.max_connections = max_connections
+        self.max_keepalive_connections = max_keepalive_connections
+        self.max_concurrent_per_domain = max_concurrent_per_domain
+        self.min_request_interval = min_request_interval
         self.headers = headers
         self.debug = debug
         if self.debug:
@@ -111,11 +129,26 @@ class Crawler:
         # self.client: aiohttp.ClientSession = aiohttp.ClientSession(
         #     loop=self._event_loop
         # )  # assign event loop to client
-        self.client: httpx.AsyncClient = AsyncClient(verify=False, proxies=self.proxy)
+        self.client_limits = httpx.Limits(
+            max_connections=self.max_connections,
+            max_keepalive_connections=self.max_keepalive_connections,
+        )
+        self.rate_limiter = DomainRateLimiter(
+            max_concurrent_per_domain=self.max_concurrent_per_domain,
+            min_interval=self.min_request_interval,
+        )
+        self.client: httpx.AsyncClient = self._create_client()
         self.close = threading.Event()  # whether the crawler is closed
         self.close.clear()
         self.pool: AsyncPoolCollector = AsyncPoolCollector.create_pool(
             num_workers=num_workers, queue_capacity=0, event_loop=self._event_loop
+        )
+
+    def _create_client(self) -> httpx.AsyncClient:
+        return AsyncClient(
+            verify=False,
+            proxies=self.proxy,
+            limits=self.client_limits,
         )
 
     def start(self):
@@ -189,7 +222,7 @@ class Crawler:
             return
         logger.debug(f"Start validate...")
         self._event_loop = asyncio.new_event_loop()
-        self.client = AsyncClient(verify=False, proxies=self.proxy)
+        self.client = self._create_client()
         try:
             self._event_loop.run_until_complete(self.validate())
         except asyncio.CancelledError:
@@ -371,20 +404,13 @@ class Crawler:
         logger.debug(f"Fetching {url}")
         response = None
         try:
-            # response = await self.client.get(
-            #     url,
-            #     allow_redirects=self.follow_redirects,
-            #     headers=self.headers,
-            #     proxy=self.proxy,
-            #     verify_ssl=False,
-            #     timeout=self.timeout,
-            # )
-            response = await self.client.get(
-                url,
-                headers=self.headers,
-                follow_redirects=self.follow_redirects,
-                timeout=self.timeout,
-            )
+            async with self.rate_limiter.acquire(url):
+                response = await self.client.get(
+                    url,
+                    headers=self.headers,
+                    follow_redirects=self.follow_redirects,
+                    timeout=self.timeout,
+                )
             logger.debug(f"Fetch {url}, status: {response.status_code}")
             await self.cache.set(url, self.serializer.dumps(response), ttl=60)
 

@@ -61,6 +61,10 @@ Validator = namedtuple("Validator", ["get_attr_func", "expected_value"])
                 "--cookie=MyCookie",
                 "--max-page=100",
                 "--max-depth=3",
+                "--max-connections=123",
+                "--max-keepalive-connections=45",
+                "--max-concurrent-per-domain=7",
+                "--min-request-interval=0.35",
                 "-x http://127.0.0.1:7890",
                 "-F",
                 "--debug"
@@ -70,6 +74,10 @@ Validator = namedtuple("Validator", ["get_attr_func", "expected_value"])
                 (lambda setting: setting["headers"]["Cookie"], "MyCookie"),
                 (lambda setting: setting["max_depth"], 3),
                 (lambda setting: setting["max_page_num"], 100),
+                (lambda setting: setting["max_connections"], 123),
+                (lambda setting: setting["max_keepalive_connections"], 45),
+                (lambda setting: setting["max_concurrent_per_domain"], 7),
+                (lambda setting: setting["min_request_interval"], 0.35),
                 (lambda setting: setting["proxy"], "http://127.0.0.1:7890"),
                 (lambda setting: setting["follow_redirects"], True),
                 (lambda setting: setting["debug"], True),
@@ -112,6 +120,10 @@ def test_crawler_facade_update_settings(
                 "--cookie=MyCookie",
                 "--max-page=100",
                 "--max-depth=3",
+                "--max-connections=123",
+                "--max-keepalive-connections=45",
+                "--max-concurrent-per-domain=7",
+                "--min-request-interval=0.35",
                 "-x http://127.0.0.1:7890",
             ],
             [
@@ -119,6 +131,10 @@ def test_crawler_facade_update_settings(
                 (lambda crawler: crawler.headers["Cookie"], "MyCookie"),
                 (lambda crawler: crawler.max_depth, 3),
                 (lambda crawler: crawler.max_page_num, 100),
+                (lambda crawler: crawler.max_connections, 123),
+                (lambda crawler: crawler.max_keepalive_connections, 45),
+                (lambda crawler: crawler.rate_limiter.max_concurrent_per_domain, 7),
+                (lambda crawler: crawler.rate_limiter.min_interval, 0.35),
                 (lambda crawler: crawler.proxy, "http://127.0.0.1:7890"),
                 (lambda crawler: len(crawler.start_urls), 1),
                 # (lambda crawler: crawler.follow_redirects, False), # settings is modified via other tests
@@ -244,6 +260,9 @@ def test_normal_run(clicker: CliRunner, invoke_args: typing.List[str]):
     finally:
         if httpd is not None:
             httpd.shutdown()
+            httpd.server_close()
+        if thread is not None:
+            thread.join(timeout=1)
 
 
 # @pytest.mark.parametrize( # TODO: cannot copy file in github actions

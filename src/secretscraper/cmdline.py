@@ -84,6 +84,26 @@ class ExternalEntry:
 )
 @click.option("--max-depth", help="Max depth to crawl, default 1", type=click.INT)
 @click.option(
+    "--max-connections",
+    help="Max total HTTP connections",
+    type=click.INT,
+)
+@click.option(
+    "--max-keepalive-connections",
+    help="Max keep-alive HTTP connections",
+    type=click.INT,
+)
+@click.option(
+    "--max-concurrent-per-domain",
+    help="Max simultaneous requests per domain",
+    type=click.INT,
+)
+@click.option(
+    "--min-request-interval",
+    help="Minimum seconds between requests to the same domain",
+    type=click.FLOAT,
+)
+@click.option(
     "-o",
     "--outfile",
     help="Output result to specified file in csv format",
@@ -179,6 +199,10 @@ max_page_num: 1000 # 0 for no limit
 timeout: 5
 follow_redirects: true
 workers_num: 1000
+max_connections: 100 # total HTTP connection pool size
+max_keepalive_connections: 50 # keep-alive connections retained in the pool
+max_concurrent_per_domain: 5 # simultaneous requests allowed per domain
+min_request_interval: 0.2 # seconds between requests to the same domain
 headers:
   Accept: "*/*"
   Cookie: ""

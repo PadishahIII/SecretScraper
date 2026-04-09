@@ -4,7 +4,7 @@
 
 - git init
 - git config
-- poetry install
+- uv sync
 - git commit
 
 ## Develop
@@ -38,15 +38,15 @@ git tag -a v0.1.0
 Build this tag distribution package.
 
 ```shell script
-poetry build
+uv build
 ```
 
 ### Upload index server
 
-Upload to pypi server, or pass `--repository https://pypi.org/simple` to specify index server.
+Upload the built distributions with uv's publish options.
 
 ```shell script
-poetry publish
+uv publish
 ```
 
 ## Develop guide

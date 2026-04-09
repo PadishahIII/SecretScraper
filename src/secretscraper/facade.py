@@ -264,6 +264,31 @@ class CrawlerFacade:
         if verbose is not None:
             self.settings["verbose"] = verbose
 
+        # HTTP client and rate-limit settings
+        max_connections: typing.Optional[int] = self.custom_settings.get(
+            "max_connections", None
+        )
+        if max_connections is not None:
+            self.settings["max_connections"] = max_connections
+
+        max_keepalive_connections: typing.Optional[int] = self.custom_settings.get(
+            "max_keepalive_connections", None
+        )
+        if max_keepalive_connections is not None:
+            self.settings["max_keepalive_connections"] = max_keepalive_connections
+
+        max_concurrent_per_domain: typing.Optional[int] = self.custom_settings.get(
+            "max_concurrent_per_domain", None
+        )
+        if max_concurrent_per_domain is not None:
+            self.settings["max_concurrent_per_domain"] = max_concurrent_per_domain
+
+        min_request_interval: typing.Optional[float] = self.custom_settings.get(
+            "min_request_interval", None
+        )
+        if min_request_interval is not None:
+            self.settings["min_request_interval"] = min_request_interval
+
         # Read rules from config file
         rules: typing.Dict[str, str] = read_rules_from_setting(self.settings)
         handler_type = self.settings.get("handler_type", "re")
@@ -302,6 +327,10 @@ class CrawlerFacade:
             headers=headers,
             verbose=self.settings.get("verbose"),
             timeout=self.settings.get("timeout"),
+            max_connections=self.settings.get("max_connections"),
+            max_keepalive_connections=self.settings.get("max_keepalive_connections"),
+            max_concurrent_per_domain=self.settings.get("max_concurrent_per_domain"),
+            min_request_interval=self.settings.get("min_request_interval"),
             debug=self.debug,
             follow_redirects=self.settings["follow_redirects"],
             dangerous_paths=dangerous_paths,

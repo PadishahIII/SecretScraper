@@ -138,9 +138,13 @@ def start_local_test_http_server(host: str, port: int, server_dir: Path = None) 
         def __init__(self, *args, **kwargs):
             super().__init__(*args, directory=DIR, **kwargs)
 
+    class ThreadingReusableHTTPServer(http.server.ThreadingHTTPServer):
+        allow_reuse_address = True
+        daemon_threads = True
+
     try:
-        httpd = http.server.HTTPServer((host, port), Handler)
-        thread = Thread(target=httpd.serve_forever)
+        httpd = ThreadingReusableHTTPServer((host, port), Handler)
+        thread = Thread(target=httpd.serve_forever, daemon=True)
         thread.start()
         return thread, httpd
     except OSError:

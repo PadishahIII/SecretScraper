@@ -9,6 +9,10 @@ max_page_num: 1000 # 0 for no limit
 timeout: 5
 follow_redirects: false
 workers_num: 1000
+max_connections: 100
+max_keepalive_connections: 50
+max_concurrent_per_domain: 5
+min_request_interval: 0.2
 headers:
   Accept: "*/*"
   Cookie: ""

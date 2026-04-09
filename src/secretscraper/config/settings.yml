@@ -10,6 +10,10 @@ max_page_num: 1000 # 0 for no limit
 timeout: 5
 follow_redirects: true
 workers_num: 1000
+max_connections: 100 # total HTTP connection pool size
+max_keepalive_connections: 50 # keep-alive connections retained in the pool
+max_concurrent_per_domain: 5 # simultaneous requests allowed per domain
+min_request_interval: 0.2 # seconds between requests to the same domain
 headers:
   Accept: "*/*"
   Cookie: ""

@@ -12,10 +12,18 @@ Usage:
 
 import asyncio
 import time
-from urllib.parse import urlparse
 from contextlib import asynccontextmanager
+from dataclasses import dataclass
+from urllib.parse import urlparse
 
 __all__ = ["DomainRateLimiter"]
+
+
+@dataclass
+class _DomainState:
+    semaphore: asyncio.Semaphore
+    interval_lock: asyncio.Lock
+    last_request_started: float = 0.0
 
 
 class DomainRateLimiter:
@@ -30,34 +38,46 @@ class DomainRateLimiter:
         max_concurrent_per_domain: int = 5,
         min_interval: float = 0.2,
     ):
-        self._max_concurrent = max_concurrent_per_domain
-        self._min_interval = min_interval
-        # domain -> (semaphore, last_request_timestamp)
-        self._domain_state: dict[str, tuple[asyncio.Semaphore, float]] = {}
+        if max_concurrent_per_domain < 1:
+            raise ValueError("max_concurrent_per_domain must be at least 1")
+        if min_interval < 0:
+            raise ValueError("min_interval must be non-negative")
+
+        self.max_concurrent_per_domain = max_concurrent_per_domain
+        self.min_interval = min_interval
+        self._domain_state: dict[str, _DomainState] = {}
+        self._state_lock = asyncio.Lock()
 
     def _get_domain(self, url: str) -> str:
         parsed = urlparse(url)
-        return parsed.netloc or parsed.hostname or url
+        return (parsed.hostname or parsed.netloc or url).lower()
 
-    def _ensure_domain(self, domain: str) -> tuple[asyncio.Semaphore, float]:
-        if domain not in self._domain_state:
-            self._domain_state[domain] = (
-                asyncio.Semaphore(self._max_concurrent),
-                0.0,
-            )
-        return self._domain_state[domain]
+    async def _get_domain_state(self, domain: str) -> _DomainState:
+        async with self._state_lock:
+            state = self._domain_state.get(domain)
+            if state is None:
+                state = _DomainState(
+                    semaphore=asyncio.Semaphore(self.max_concurrent_per_domain),
+                    interval_lock=asyncio.Lock(),
+                )
+                self._domain_state[domain] = state
+            return state
 
     @asynccontextmanager
     async def acquire(self, url: str):
         """Async context manager that rate-limits requests per domain."""
         domain = self._get_domain(url)
-        sem, _ = self._ensure_domain(domain)
+        state = await self._get_domain_state(domain)
 
-        async with sem:
-            _, last_ts = self._domain_state[domain]
-            now = time.monotonic()
-            wait = self._min_interval - (now - last_ts)
-            if wait > 0:
-                await asyncio.sleep(wait)
-            self._domain_state[domain] = (sem, time.monotonic())
+        await state.semaphore.acquire()
+        try:
+            async with state.interval_lock:
+                wait = self.min_interval - (
+                    time.monotonic() - state.last_request_started
+                )
+                if wait > 0:
+                    await asyncio.sleep(wait)
+                state.last_request_started = time.monotonic()
             yield
+        finally:
+            state.semaphore.release()
