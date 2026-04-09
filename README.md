@@ -1,7 +1,7 @@
 # SecretScraper
 
 ![Tests](https://github.com/PadishahIII/SecretScraper/actions/workflows/main.yml/badge.svg)
-![Pypi Python Version](https://img.shields.io/pypi/pyversions/secretscraper.svg?style=plastic)
+![PyPI Python Version](https://img.shields.io/pypi/pyversions/secretscraper.svg?style=plastic)
 
 ## Overview
 
@@ -23,7 +23,7 @@ data via regular expression.
 
 ## Prerequisite
 - Platform: Test on MacOS, Ubuntu and Windows.
-- Python Version >= 3.9
+- Python Versions: 3.9 - 3.14
 
 ## Usage
 
