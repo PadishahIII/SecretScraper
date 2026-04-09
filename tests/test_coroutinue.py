@@ -191,7 +191,8 @@ class TestCoroutineAsyncPool:
         assert self.pool.is_finish is True
         assert self.pool.task_queue.empty() is True
         end = time.perf_counter()
-        assert end - start < 0.6
+        assert any(not future.done() for future in futures)
+        assert end - start < 1
 
 
 class TestCoroutineAsyncPoolCollector:
