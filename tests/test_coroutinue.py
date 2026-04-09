@@ -12,6 +12,7 @@ import pytest
 
 from secretscraper.coroutinue import (AsyncPool, AsyncPoolCollector, AsyncTask,
                                       AsyncWorker)
+from secretscraper.util import start_local_test_http_server
 
 logger = logging.getLogger(__name__)
 
@@ -21,10 +22,25 @@ async def async_increment(i: int, sec: float) -> int:
     return i + 1
 
 
-async def aiohttp_request(url: str, proxy: str = None) -> aiohttp.ClientResponse:
+async def aiohttp_request(url: str, proxy: str = None) -> int:
     async with aiohttp.ClientSession() as session:
-        res = await session.get(url, proxy=proxy)
-        return res
+        async with session.get(url, proxy=proxy) as res:
+            await res.read()
+            return res.status
+
+
+@pytest.fixture
+def local_http_server() -> typing.Generator[str, None, None]:
+    thread, httpd = start_local_test_http_server("127.0.0.1", 0)
+    assert httpd is not None
+    try:
+        port = httpd.server_address[1]
+        yield f"http://127.0.0.1:{port}/index.html"
+    finally:
+        httpd.shutdown()
+        httpd.server_close()
+        if thread is not None:
+            thread.join(timeout=1)
 
 
 @pytest.fixture(scope="class")
@@ -58,8 +74,8 @@ class TestCoroutineAsyncWorker:
         assert task.future.result() == ret
 
     @pytest.mark.asyncio
-    async def test_coroutine_async_task_aiohttp(self):
-        task = AsyncTask(aiohttp_request, "https://www.baidu.com")
+    async def test_coroutine_async_task_aiohttp(self, local_http_server: str):
+        task = AsyncTask(aiohttp_request, local_http_server)
         start = time.perf_counter()
         ret = await task.func(*task.args, **task.kwargs)
         end = time.perf_counter()
@@ -68,7 +84,7 @@ class TestCoroutineAsyncWorker:
 
         task.future.set_result(ret)
         assert task.future.done() is True
-        assert task.future.result() == ret
+        assert task.future.result() == 200
 
     @pytest.mark.asyncio
     async def test_coroutine_async_worker_normal_finish(
