@@ -164,7 +164,7 @@ def test_crawler_facade_update_settings(
                 ),
                 (
                     lambda crawler: crawler.filter.doFilter(
-                        urlparse("http://baidu.com")
+                        urlparse("http://external.test")
                     ),
                     False,
                 ),
@@ -181,7 +181,7 @@ def test_crawler_facade_update_settings(
                 ),
                 (
                     lambda crawler: crawler.filter.doFilter(
-                        urlparse("http://baidu.com")
+                        urlparse("http://external.test")
                     ),
                     True,
                 ),

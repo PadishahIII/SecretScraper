@@ -251,7 +251,7 @@ class Crawler:
 
             for url in urls:
                 if not str(url.response_status).isdigit():
-                    task_list.append(asyncio.create_task(fetch_task(base)))
+                    task_list.append(asyncio.create_task(fetch_task(url)))
         for future in asyncio.as_completed(task_list):
             await future
 
@@ -313,29 +313,14 @@ class Crawler:
 
     def is_extend(self, response: httpx.Response) -> bool:
         """Determine if extract links from a url node"""
-        is_text_like = False
-        is_html = False
-        try:
-            content_type = response.headers['content-type']
-        except KeyError:
-            content_type = ""
-        if content_type.startswith("text"):
-            is_text_like = True
-            if content_type.strip().startswith("text/html"):
-                is_html = True
-        elif content_type.startswith("application"):
-            if content_type.endswith(
-                "octet-stream"
-            ) or content_type.endswith("pdf"):
-                is_text_like = False
-            else:
-                is_text_like = True
+        content_type = response.headers.get("content-type", "")
+        content_type = content_type.split(";", maxsplit=1)[0].strip().lower()
 
-        # if not is_text_like or not is_html:  # or not is_html just process html TODO: whether extend or not
-        #     return False
-        # if response.status_code != 200:  # just process normal response
-        #     return False
-        return True
+        if content_type.startswith("text/"):
+            return True
+        if content_type.startswith("application/"):
+            return content_type not in {"application/octet-stream", "application/pdf"}
+        return False
 
     def is_append_js(self, url_node: URLNode) -> bool:
         """Determine whether append url to js result or not"""
@@ -377,20 +362,23 @@ class Crawler:
         #     self.url_dict[url_node] = set()
 
         for child in url_children:
-            if child is not None and child not in self.visited_urls:
-                self.found_urls.add(child)
-                if is_extending and self.filter.doFilter(child.url_object):
-                    self.working_queue.put(child)
-                    self.visited_urls.add(child)
-                if self.is_append_js(child):
-                    if url_node not in self.js_dict:
-                        self.js_dict[url_node] = set()
-                    self.js_dict[url_node].add(child)
-                elif self.is_append_url(child):
-                    if url_node not in self.url_dict:
-                        self.url_dict[url_node] = set()
-                    self.url_dict[url_node].add(child)
-                logger.debug(f"New link found: {child.url} from {url_node.url}")
+            if child is None:
+                continue
+
+            self.found_urls.add(child)
+            if self.is_append_js(child):
+                if url_node not in self.js_dict:
+                    self.js_dict[url_node] = set()
+                self.js_dict[url_node].add(child)
+            elif self.is_append_url(child):
+                if url_node not in self.url_dict:
+                    self.url_dict[url_node] = set()
+                self.url_dict[url_node].add(child)
+
+            if child not in self.visited_urls and is_extending and self.filter.doFilter(child.url_object):
+                self.working_queue.put(child)
+                self.visited_urls.add(child)
+            logger.debug(f"New link found: {child.url} from {url_node.url}")
 
     # @aiocache.cached(ttl=5, key="http", namespace="fetch", serializer=PickleSerializer())
     async def fetch(self, url: str) -> httpx.Response:

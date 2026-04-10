@@ -17,6 +17,7 @@ Swagger: /static/swagger-ui.html
 ID card: 130528200011110000
 Phone: 13273487666
 Phone: 13273487666
+Phone: "13273487666"
 
 URL as a value: /login?redirect=http://xxxx)
 Email: "3333333qqqxxxx@qq.com"
@@ -26,6 +27,7 @@ Internal IP: 192.168.1.1.1.1
 Cloud key: Accesskeyid=xxxx AccessKeySecret
 Shiro: xxx=deleteme rememberme=true
 APIKey: 9c65a3ebabdb448b4476b114ee574a6f  E9d7e49a027469b78ad956903617f8ed 00e3d061e7debe5f88aec44e0b549b76
+Jwt: "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0"
 
 Suspendisse potenti. Nunc nec dui ac mauris eleifend lacinia.
 Fusce convallis neque at lectus venenatis, sit amet volutpat

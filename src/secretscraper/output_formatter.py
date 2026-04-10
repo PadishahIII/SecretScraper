@@ -53,21 +53,20 @@ class Formatter:
     def filter(self, url: URLNode) -> bool:
         """Determine whether a url should be displayed"""
         try:
-            if int(url.response_status) == 404:  # filter 404 by default
+            status = int(url.response_status)
+            if status == 404:  # filter 404 by default
                 return False
         except ValueError:
+            status = None
             pass
         if self._allowed_status is None:
             return True
-        for status_range in self._allowed_status:
-            try:
-                if status_range.start <= int(url.response_status) < status_range.end:
-                    continue
-                else:
-                    return False
-            except ValueError:
-                return False  # default discard
-        return True
+        if status is None:
+            return False  # default discard when status filter is active
+        return any(
+            status_range.start <= status < status_range.end
+            for status_range in self._allowed_status
+        )
 
     def format_single_url(self, url: URLNode) -> str:
         return self.format_normal_result(f"{str(url.url)}") \
@@ -239,7 +238,7 @@ class Formatter:
 
     ) -> None:
         import csv
-        with outfile.open("w", encoding='utf-8', errors='replace') as f:
+        with outfile.open("w", encoding='utf-8', errors='replace', newline="") as f:
             writer = csv.writer(f)
             writer.writerow(("URL", "Title", "Response Code", "Content Length", "Content Type", "Secrets"))
             url_nodes: typing.Set[URLNode] = set()
@@ -247,6 +246,7 @@ class Formatter:
                 url_nodes.add(key)
                 for url in urls:
                     url_nodes.add(url)
+            url_nodes.update(url_secrets.keys())
             for url in url_nodes:
                 row = [url.url, url.title, url.response_status, url.content_length, url.content_type]
                 if url in url_secrets:

@@ -14,7 +14,7 @@ async def test_domain_rate_limiter_enforces_per_domain_concurrency():
 
     async def worker():
         nonlocal active, max_active
-        async with limiter.acquire("http://example.com/test"):
+        async with limiter.acquire("http://127.0.0.1/test"):
             active += 1
             max_active = max(max_active, active)
             await asyncio.sleep(0.02)
@@ -30,10 +30,10 @@ async def test_domain_rate_limiter_enforces_min_interval():
     limiter = DomainRateLimiter(max_concurrent_per_domain=5, min_interval=0.05)
     timestamps = []
 
-    async with limiter.acquire("http://example.com/one"):
+    async with limiter.acquire("http://127.0.0.1/one"):
         timestamps.append(time.monotonic())
 
-    async with limiter.acquire("http://example.com/two"):
+    async with limiter.acquire("http://127.0.0.1/two"):
         timestamps.append(time.monotonic())
 
     assert timestamps[1] - timestamps[0] >= 0.045

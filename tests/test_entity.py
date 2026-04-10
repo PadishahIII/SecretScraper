@@ -7,20 +7,20 @@ from secretscraper.entity import URLNode
 
 def test_urlnode():
     base_node = URLNode(
-        url="http://example.com",
-        url_object=urlparse("http://example.com"),
+        url="http://127.0.0.1",
+        url_object=urlparse("http://127.0.0.1"),
         depth=0,
         parent=None,
     )
     base_node_2 = URLNode(
-        url="http://example.com/b",
-        url_object=urlparse("http://example.com/b"),
+        url="http://127.0.0.1/b",
+        url_object=urlparse("http://127.0.0.1/b"),
         depth=0,
         parent=None,
     )
     node1 = URLNode(
-        url="http://example.com/xxx",
-        url_object=urlparse("http://example.com/xxx"),
+        url="http://127.0.0.1/xxx",
+        url_object=urlparse("http://127.0.0.1/xxx"),
         depth=1,
         parent=base_node,
     )
@@ -42,8 +42,8 @@ def test_urlnode():
     assert hash(node1) == hash(node1_copy_without_url)
     with pytest.raises(ValueError):
         URLNode(
-            url="http://example.com/2",
-            url_object=urlparse("http://example.com/2"),
+            url="http://127.0.0.1/2",
+            url_object=urlparse("http://127.0.0.1/2"),
             depth=0,
             parent=base_node,
         )

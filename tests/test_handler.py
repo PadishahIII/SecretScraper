@@ -88,7 +88,16 @@ def test_get_regex_handler_explicit_hyperscan_unavailable(regex_dict, monkeypatc
 #     assert len(result_types) == len(regex_dict)
 
 
-def test_bs_handler(html_text):
+def test_bs_handler():
+    html_text = """
+    <html>
+      <body>
+        <a href="/login">login</a>
+        <a href="/logout">logout</a>
+      </body>
+    </html>
+    """
+
     def filter_login(soup: BeautifulSoup) -> typing.List[BSResult]:
         """Get all link elements that contains login literal"""
         links = soup.find_all("a")
