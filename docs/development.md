@@ -49,6 +49,8 @@ Upload the built distributions with uv's publish options.
 uv publish
 ```
 
+For the current project-specific release workflow, see `docs/publish.md`.
+
 ## Develop guide
 
 ### Pycharm Configuration
