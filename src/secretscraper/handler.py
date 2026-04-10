@@ -162,23 +162,33 @@ class BSHandler(Handler):
         return results
 
 
+def _is_hyperscan_available() -> bool:
+    """Check whether hyperscan can be used on the current platform."""
+    if sys.platform.startswith("win"):
+        return False
+
+    try:
+        import hyperscan  # noqa: F401
+        return True
+    except ImportError:
+        return False
+
+
 def get_regex_handler(rules: typing.Dict[str, str], type_: str = "", *args, **kwargs) -> Handler:
     """Return regex handler on current platform"""
     if len(type_) == 0:
-        is_hyperscan = False
-        try:
-            import hyperscan
-            is_hyperscan = True
-        except ImportError:
-            is_hyperscan = False
-        if sys.platform.startswith("win") or not is_hyperscan:
+        if not _is_hyperscan_available():
             return ReRegexHandler(rules, *args, **kwargs)
         else:
             return HyperscanRegexHandler(rules, *args, **kwargs)
     else:
-        if type == "regex":
+        if type_ == "regex":
             return ReRegexHandler(rules, *args, **kwargs)
-        elif type == "hyperscan":
+        elif type_ == "hyperscan":
+            if not _is_hyperscan_available():
+                raise HandlerException(
+                    "Hyperscan handler is not available on this platform or dependency is not installed"
+                )
             return HyperscanRegexHandler(rules, *args, **kwargs)
         else:
             return ReRegexHandler(rules, *args, **kwargs)

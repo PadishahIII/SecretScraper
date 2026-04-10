@@ -7,9 +7,10 @@ import typing
 import pytest
 from bs4 import BeautifulSoup
 
+from secretscraper import handler as handler_module
 from secretscraper.entity import Secret
 from secretscraper.exception import HandlerException
-from secretscraper.handler import BSHandler, BSResult, ReRegexHandler
+from secretscraper.handler import BSHandler, BSResult, ReRegexHandler, get_regex_handler
 from secretscraper.util import is_hyperscan
 
 from . import settings
@@ -46,6 +47,34 @@ def test_hyperscan_regex_handler(regex_dict, resource_text):
     result_types = set(map(lambda s: s.type, result))
 
     assert len(result_types) == len(regex_dict)
+
+
+def test_get_regex_handler_explicit_regex(regex_dict):
+    handler = get_regex_handler(regex_dict, type_="regex")
+
+    assert isinstance(handler, ReRegexHandler)
+
+
+def test_get_regex_handler_explicit_hyperscan(regex_dict, monkeypatch):
+    class FakeHyperscanRegexHandler:
+        def __init__(self, rules, *args, **kwargs):
+            self.rules = rules
+
+    monkeypatch.setattr(handler_module, "_is_hyperscan_available", lambda: True)
+    monkeypatch.setattr(
+        handler_module, "HyperscanRegexHandler", FakeHyperscanRegexHandler, raising=False
+    )
+
+    handler = get_regex_handler(regex_dict, type_="hyperscan")
+
+    assert isinstance(handler, FakeHyperscanRegexHandler)
+
+
+def test_get_regex_handler_explicit_hyperscan_unavailable(regex_dict, monkeypatch):
+    monkeypatch.setattr(handler_module, "_is_hyperscan_available", lambda: False)
+
+    with pytest.raises(HandlerException, match="Hyperscan handler is not available"):
+        get_regex_handler(regex_dict, type_="hyperscan")
 
 
 # @pytest.mark.asyncio
