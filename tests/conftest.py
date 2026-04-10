@@ -1,6 +1,7 @@
 """Test config"""
 
 import functools
+import os
 import typing
 from pathlib import Path
 
@@ -10,6 +11,11 @@ from click.testing import CliRunner
 from secretscraper.util import read_rules_from_setting, start_local_test_http_server
 
 from . import settings
+
+
+# Python 3.13's tmp_path handling can reach getpass.getuser() on Windows.
+# Some CI runners do not provide USERNAME, so seed a stable fallback for tests.
+os.environ.setdefault("USERNAME", os.environ.get("USER", "pytest"))
 
 
 @pytest.fixture()
