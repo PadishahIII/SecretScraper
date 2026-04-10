@@ -1,6 +1,6 @@
 [project]
 name = "secretscraper"
-version = "1.4.2"
+version = "1.4.3"
 description = "SecretScraper is a web scraper tool that can scrape the content through target websites and extract secret information via regular expression."
 authors = [{ name = "Padishah", email = "straystrayer@gmail.com" }]
 license = { text = "MIT" }
